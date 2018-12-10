@@ -15,7 +15,6 @@ class MailgunWebhookController
      */
     public function index(Request $request)
     {
-        info($request->all());
         $rules = array(
 			'event-data.message.headers.message-id' => 'required',
 			'signature.signature'       => 'required',
