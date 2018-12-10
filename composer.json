@@ -1,0 +1,41 @@
+{
+    "name": "tsfcorp/email",
+    "description": "Laravel package for sending emails",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ionut Antohi",
+            "email": "ionut.antohi@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "ext-json": "*",
+        "laravel/framework": "~5.1|~5.2|~5.3|~5.4|~5.5|~5.6|~5.7",
+        "mailgun/mailgun-php": "^2.6",
+        "guzzlehttp/guzzle": "^6.3",
+        "php-http/guzzle6-adapter": "^1.1"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.2",
+        "phpunit/phpunit": "^6.5",
+        "orchestra/testbench": "~3.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "TsfCorp\\Email\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TsfCorp\\Email\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "TsfCorp\\Email\\EmailServiceProvider"
+            ]
+        }
+    }
+}
