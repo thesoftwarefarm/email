@@ -99,4 +99,23 @@ class EmailSendingTest extends TestCase
         $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
         $this->assertEquals('Queued. Thank you!', $email->notes);
     }
+
+    public function test_that_email_is_not_sent_in_non_production_environment()
+    {
+        $this->app['config']->set('app.env', 'local');
+
+        $email = (new Email())->to('to@mail.com')->enqueue();
+
+        $job = new EmailJob($email->getModel()->id);
+
+        $transport = Mockery::mock(Transport::class);
+
+        $this->expectsEvents(EmailFailed::class);
+
+        $job->sendVia($transport);
+
+        $email = $email->getModel()->fresh();
+        $this->assertEquals('failed', $email->status);
+        $this->assertEquals('Sending email is disabled in non production environment.', $email->notes);
+    }
 }
