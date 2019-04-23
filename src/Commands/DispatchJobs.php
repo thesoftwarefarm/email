@@ -57,6 +57,8 @@ class DispatchJobs extends Command
             /** @var \TsfCorp\Email\Models\EmailModel $message */
             foreach($messages as $message)
             {
+                $this->info("Dispatching job for email id: {$message->id}");
+
                 $message->dispatchJob();
             }
         }
