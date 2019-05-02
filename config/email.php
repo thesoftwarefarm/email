@@ -7,9 +7,9 @@ return [
     | Project Name
     |--------------------------------------------------------------------------
     |
-    | Since this package can be installed within multiple projects which
-    | push email to the same database, the project name is required to
-    | differentiate between them.
+    | This value is the name of your project. This value is used to
+    | differentiate between multiple projects which push emails
+    | in the same database
     |
     | Example: "my_project"
     |
