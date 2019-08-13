@@ -49,7 +49,10 @@ abstract class Transport
     {
         if ($email->provider == 'mailgun')
         {
-            $mailgun = Mailgun::create(config('email.providers.mailgun.api_key'));
+            if (config('email.providers.mailgun.api_url'))
+                $mailgun = Mailgun::create(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.api_url'));
+            else
+                $mailgun = Mailgun::create(config('email.providers.mailgun.api_key'));
 
             return new MailgunTransport($mailgun);
         }
