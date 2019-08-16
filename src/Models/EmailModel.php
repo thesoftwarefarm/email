@@ -28,7 +28,7 @@ class EmailModel extends Model
 
     /**
      * @param $identifier
-     * @return |null
+     * @return \TsfCorp\Email\Models\EmailModel|null
      */
     public static function getByRemoteIdentifier($identifier)
     {
@@ -84,7 +84,7 @@ class EmailModel extends Model
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function prepareToAddress()
     {
@@ -92,7 +92,7 @@ class EmailModel extends Model
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function prepareCcAddress()
     {
@@ -100,7 +100,7 @@ class EmailModel extends Model
     }
 
     /**
-     * @return string
+     * @return array
      */
     public function prepareBccAddress()
     {
@@ -109,7 +109,7 @@ class EmailModel extends Model
 
     /**
      * @param $recipients
-     * @return string
+     * @return array
      */
     private function prepareRecipient($recipients)
     {
@@ -125,8 +125,8 @@ class EmailModel extends Model
         if ( ! count($recipients))
             return null;
 
-        return implode(', ', array_map(function ($recipient) {
+        return array_map(function ($recipient) {
             return sprintf('%s <%s>', $recipient->name, $recipient->email);
-        }, $recipients));
+        }, $recipients);
     }
 }

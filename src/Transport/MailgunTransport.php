@@ -32,9 +32,9 @@ class MailgunTransport extends Transport
         {
             $response = $this->mailgun->messages()->send(config('email.providers.mailgun.domain'), [
                 'from'       => $email->prepareFromAddress(),
-                'to'         => $email->prepareToAddress(),
-                'cc'         => $email->prepareCcAddress(),
-                'bcc'        => $email->prepareBccAddress(),
+                'to'         => implode(', ', $email->prepareToAddress()),
+                'cc'         => implode(', ', $email->prepareCcAddress()),
+                'bcc'        => implode(', ', $email->prepareBccAddress()),
                 'subject'    => $email->subject,
                 'text'       => 'To view the message, please use an HTML compatible email viewer',
                 'html'       => $email->body,
