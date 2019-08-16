@@ -2,6 +2,7 @@
 
 namespace TsfCorp\Email\Transport;
 
+use Aws\Ses\SesClient;
 use Exception;
 use Mailgun\Mailgun;
 use TsfCorp\Email\Models\EmailModel;
@@ -42,7 +43,7 @@ abstract class Transport
      * Determine with which third party service this email should be sent
      *
      * @param \TsfCorp\Email\Models\EmailModel $email
-     * @return \TsfCorp\Email\Transport\MailgunTransport
+     * @return \TsfCorp\Email\Transport\Transport
      * @throws \Exception
      */
     public static function resolveFor(EmailModel $email)
@@ -55,6 +56,21 @@ abstract class Transport
                 $mailgun = Mailgun::create(config('email.providers.mailgun.api_key'));
 
             return new MailgunTransport($mailgun);
+        }
+
+        if ($email->provider == 'ses')
+        {
+            $ses = new SesClient([
+                'region' => config('email.providers.ses.region'),
+                'version' => 'latest',
+                'service' => 'email',
+                'credentials' => [
+                    'key' => config('email.providers.ses.key'),
+                    'secret' => config('email.providers.ses.secret'),
+                ],
+            ]);
+
+            return new SesTransport($ses);
         }
 
         throw new Exception('Invalid email provider');

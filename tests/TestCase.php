@@ -35,9 +35,25 @@ class TestCase extends Orchestra
         $app['config']->set('email.database_connection', 'sqlite');
         $app['config']->set('email.project', 'MY_PROJECT');
         $app['config']->set('email.default_provider', 'mailgun');
-        $app['config']->set('email.providers.mailgun.api_key', 'mailgun_api_key');
-        $app['config']->set('email.from.address', 'default@address.com');
-        $app['config']->set('email.from.name', 'Default Name');
+
+        $app['config']->set('email.providers', [
+            'mailgun' => [
+                'api_url' => '',
+                'api_key' => 'mailgun_api_key',
+                'domain' => '',
+            ],
+            'ses' => [
+                'key' => 'ses_api_secret',
+                'secret' => 'ses_api_secret',
+                'region' => 'eu-west-1',
+            ]
+        ]);
+
+        $app['config']->set('email.from', [
+            'address' => 'default@address.com',
+            'name' => 'Default Name'
+        ]);
+
         $app['config']->set('email.max_retries', 10);
     }
 

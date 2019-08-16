@@ -42,7 +42,7 @@ class Email
     /**
      * @var array
      */
-    private $available_providers = ['mailgun'];
+    private $available_providers = ['mailgun', 'ses'];
     /**
      * @var \TsfCorp\Email\Models\EmailModel|null
      */
