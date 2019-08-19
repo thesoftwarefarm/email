@@ -66,14 +66,14 @@ class SesWebhookController
     {
         $message = json_decode($payload['Message']);
 
-        $email = EmailModel::getByRemoteIdentifier($message->mail->messageId);
-
-		if ( ! $email)
-			return response()->json('Record not found.', 404);
-
 		if ($message->notificationType == 'Bounce' && $message->bounce->bounceType == 'Permanent')
         {
-            $email->bounces_count++;
+            $email = EmailModel::getByRemoteIdentifier($message->mail->messageId);
+
+		    if ( ! $email)
+			    return response()->json('Record not found.', 404);
+
+            $email->bounces_count += count($message->bounce->bouncedRecipients);
 		    $email->save();
 
 		    foreach($message->bounce->bouncedRecipients as $recipient)

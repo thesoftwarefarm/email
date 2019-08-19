@@ -94,6 +94,10 @@ class SesWebhookTest extends TestCase
             'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
             'TopicArn' => '1',
             'Message' => json_encode([
+                'notificationType' => 'Bounce',
+                'bounce' => [
+                    'bounceType' => 'Permanent'
+                ],
                 'mail' => [
                     'messageId' => 'dummy indentifier'
                 ]
@@ -134,7 +138,7 @@ class SesWebhookTest extends TestCase
                             'action' => 'failed',
                             'status' => '5.1.1',
                             'diagnosticCode' => 'Diagnostic code',
-                        ]
+                        ],
                     ]
                 ],
                 'mail' => [
