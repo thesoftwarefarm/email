@@ -15,7 +15,8 @@
         "mailgun/mailgun-php": "^2.6",
         "guzzlehttp/guzzle": "^6.3",
         "php-http/guzzle6-adapter": "^1.1",
-        "aws/aws-sdk-php": "^3.109"
+        "aws/aws-sdk-php": "^3.109",
+        "aws/aws-php-sns-message-validator": "^1.5"
     },
     "require-dev": {
         "mockery/mockery": "^1.2",
