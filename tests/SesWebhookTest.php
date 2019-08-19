@@ -1,0 +1,98 @@
+<?php
+
+namespace TsfCorp\Email\Tests;
+
+use TsfCorp\Email\Email;
+
+class SesWebhookTest extends TestCase
+{
+    public function test_it_returns_error_if_no_payload_was_supplied()
+    {
+        $payload = null;
+
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode($payload));
+
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertEquals('No payload supplied.', $response->json());
+    }
+
+    public function test_it_returns_error_for_unrecognized_notifications()
+    {
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
+            'Type' => 'Dummy notification'
+        ]));
+
+        $this->assertEquals(403, $response->getStatusCode());
+        $this->assertEquals('Invalid notification type.', $response->json());
+    }
+
+    public function test_it_accepts_subscription_confirmation_url()
+    {
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
+            'Type' => 'SubscriptionConfirmation',
+            'SubscribeURL' => 'da',
+        ]));
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('Confirmation link received.', $response->json());
+    }
+
+    public function test_it_returns_error_if_email_not_found_in_database()
+    {
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
+            'Type' => 'Notification',
+            'Message' => json_encode([
+                'mail' => [
+                    'messageId' => 'dummy indentifier'
+                ]
+            ])
+        ]));
+
+        $this->assertEquals(404, $response->getStatusCode());
+        $this->assertEquals('Record not found.', $response->json());
+    }
+
+    public function test_bounce_is_saved_from_ses()
+    {
+        $email = (new Email())->to('to@mail.com')->enqueue();
+
+        $model = $email->getModel();
+        $model->remote_identifier = 'EMAIL_IDENTIFIER';
+        $model->save();
+
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
+            'Type' => 'Notification',
+            'Message' => json_encode([
+                'notificationType' => 'Bounce',
+                'bounce' => [
+                    'bounceType' => 'Permanent',
+                    'bouncedRecipients' => [
+                        [
+                            'emailAddress' => 'to@mail.com',
+                            'action' => 'failed',
+                            'status' => '5.1.1',
+                            'diagnosticCode' => 'Diagnostic code',
+                        ]
+                    ]
+                ],
+                'mail' => [
+                    'messageId' => 'EMAIL_IDENTIFIER'
+                ]
+            ])
+        ]));
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('Thank you.', $response->json());
+
+        $model = $model->fresh();
+        $bounce = $model->bounces->first();
+
+        $this->assertEquals('1', $model->bounces_count);
+
+        $this->assertEquals($model->id, $bounce->email_id);
+        $this->assertEquals('to@mail.com', $bounce->recipient);
+        $this->assertEquals('failed', $bounce->reason);
+        $this->assertEquals('5.1.1', $bounce->code);
+        $this->assertEquals('Diagnostic code', $bounce->description);
+    }
+}

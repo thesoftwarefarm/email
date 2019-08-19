@@ -12,7 +12,7 @@ class CreateEmailBouncesTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('email_id')->unsigned()->index();
             $table->string('recipient')->nullable();
-            $table->integer('code')->nullable();
+            $table->string('code')->nullable();
             $table->string('reason')->nullable();
             $table->text('description')->nullable();
             $table->text('message')->nullable();
