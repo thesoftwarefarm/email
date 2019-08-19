@@ -65,7 +65,7 @@ $email->enqueue()->dispatch();
 If an email could not be sent to a recipient, the email provider can notify you about this. This package handles permanent failures webhooks for you. 
 
 #### Mailgun
-Add `http://app.example/webhook-mailgun` link to "Permanent Failure" section within you mailgun webhooks settings
+Add `http://app.example/webhook-mailgun` link to "Permanent Failure" section within you mailgun webhooks settings.
 
 #### Amazon SES
 1. Create a new topic under Amazon SNS
