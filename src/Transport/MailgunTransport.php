@@ -30,11 +30,15 @@ class MailgunTransport extends Transport
     {
         try
         {
+            $to = $email->prepareToAddress();
+            $cc = $email->prepareCcAddress();
+            $bcc = $email->prepareBccAddress();
+
             $response = $this->mailgun->messages()->send(config('email.providers.mailgun.domain'), [
                 'from'       => $email->prepareFromAddress(),
-                'to'         => implode(', ', $email->prepareToAddress()),
-                'cc'         => implode(', ', $email->prepareCcAddress()),
-                'bcc'        => implode(', ', $email->prepareBccAddress()),
+                'to'         => is_array($to) && count($to)  ? implode(', ', $to) : null,
+                'cc'         => is_array($cc) && count($cc)  ? implode(', ', $cc) : null,
+                'bcc'        => is_array($bcc) && count($bcc)  ? implode(', ', $bcc) : null,
                 'subject'    => $email->subject,
                 'text'       => 'To view the message, please use an HTML compatible email viewer',
                 'html'       => $email->body,
