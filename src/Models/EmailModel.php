@@ -116,14 +116,14 @@ class EmailModel extends Model
         $recipients = json_decode($recipients);
 
         if(json_last_error() || ! is_array($recipients) || ! count($recipients))
-            return null;
+            return [];
 
         $recipients = array_filter($recipients, function ($recipient) {
              return !empty($recipient->email) && filter_var($recipient->email, FILTER_VALIDATE_EMAIL);
         });
 
         if ( ! count($recipients))
-            return null;
+            return [];
 
         return array_map(function ($recipient) {
             return sprintf('%s <%s>', $recipient->name, $recipient->email);
