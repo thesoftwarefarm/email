@@ -21,7 +21,8 @@
     "require-dev": {
         "mockery/mockery": "^1.2",
         "phpunit/phpunit": "^6.5",
-        "orchestra/testbench": "~3.4"
+        "orchestra/testbench": "~3.4",
+        "symfony/google-mailer": "^4.3"
     },
     "autoload": {
         "psr-4": {
@@ -39,5 +40,8 @@
                 "TsfCorp\\Email\\EmailServiceProvider"
             ]
         }
+    },
+    "suggest": {
+        "symfony/google-mailer": "Required to use Google SMTP transport"
     }
 }

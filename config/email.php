@@ -24,7 +24,7 @@ return [
     |
     | Configure the default provider to be used to send email.
     |
-    | Available options: 'mailgun'
+    | Available options: 'mailgun', 'ses', 'google-smtp',
     |
     */
 
@@ -49,6 +49,10 @@ return [
             'key' => env('AWS_SES_KEY'),
             'secret' => env('AWS_SES_SECRET'),
             'region' => env('AWS_SES_REGION'),  // e.g. us-east-1
+        ],
+        'google-smtp' => [
+            'email' => env('GMAIL_USER_EMAIL'),
+            'password' => env('GMAIL_USER_PASSWORD'),
         ]
     ],
 

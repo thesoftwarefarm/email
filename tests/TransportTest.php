@@ -6,6 +6,7 @@ namespace TsfCorp\Email\Tests;
 use Illuminate\Support\Arr;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Transport\GoogleSmtpTransport;
 use TsfCorp\Email\Transport\MailgunTransport;
 use TsfCorp\Email\Transport\SesTransport;
 use TsfCorp\Email\Transport\Transport;
@@ -39,5 +40,15 @@ class TransportTest extends TestCase
         $transport = Transport::resolveFor($email);
 
         $this->assertInstanceOf(SesTransport::class, $transport);
+    }
+
+    public function test_it_resolves_google_smtp_transport()
+    {
+        $email = new EmailModel();
+        $email->provider = 'google-smtp';
+
+        $transport = Transport::resolveFor($email);
+
+        $this->assertInstanceOf(GoogleSmtpTransport::class, $transport);
     }
 }

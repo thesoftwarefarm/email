@@ -75,9 +75,9 @@ class EmailModel extends Model
      */
     public function prepareFromAddress()
     {
-        $from = json_decode($this->from);
+        $from = $this->decodeRecipient($this->from);
 
-        if(json_last_error() || empty($from) || ! is_object($from))
+        if (empty($from))
             return '';
 
         return sprintf('%s <%s>', $from->name, $from->email);
@@ -109,16 +109,27 @@ class EmailModel extends Model
 
     /**
      * @param $recipients
+     * @return array|mixed
+     */
+    public function decodeRecipient($recipients)
+    {
+        $decoded = json_decode($recipients);
+
+        if(json_last_error() !== JSON_ERROR_NONE)
+        {
+            $decoded = [];
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * @param $recipients
      * @return array
      */
     private function prepareRecipient($recipients)
     {
-        $recipients = json_decode($recipients);
-
-        if(json_last_error() || ! is_array($recipients) || ! count($recipients))
-            return [];
-
-        $recipients = array_filter($recipients, function ($recipient) {
+        $recipients = array_filter($this->decodeRecipient($recipients), function ($recipient) {
              return !empty($recipient->email) && filter_var($recipient->email, FILTER_VALIDATE_EMAIL);
         });
 

@@ -60,6 +60,12 @@ $email->enqueue()->dispatch();
 #Email Providers
 - Mailgun
 - Amazon SES
+- Google SMTP
+
+```
+Note 1: In order to use Google SMTP you need at least PHP 7.1.3 and also require symfony/google-mailer in your composer.json
+Note 2: If your Google Account has 2FA enabled you need to generate an "App Password" in your Google Acccount
+```
 
 #Bounce Webhooks
 If an email could not be sent to a recipient, the email provider can notify you about this. This package handles permanent failures webhooks for you. 

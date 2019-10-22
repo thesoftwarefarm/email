@@ -46,6 +46,10 @@ class TestCase extends Orchestra
                 'key' => 'ses_api_secret',
                 'secret' => 'ses_api_secret',
                 'region' => 'eu-west-1',
+            ],
+            'google-smtp' => [
+                'email' => 'me@mail.com',
+                'password' => 'mypassword',
             ]
         ]);
 
