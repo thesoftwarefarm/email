@@ -11,7 +11,7 @@
     "require": {
         "php": ">=5.5.9",
         "ext-json": "*",
-        "laravel/framework": "~5.1|~6.0",
+        "laravel/framework": "~5.1|~6.0|~7.0",
         "mailgun/mailgun-php": "^2.6",
         "guzzlehttp/guzzle": "^6.3",
         "php-http/guzzle6-adapter": "^1.1",
