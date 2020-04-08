@@ -178,6 +178,14 @@ class Email
     }
 
     /**
+     * @return string
+     */
+    public function render()
+    {
+        return $this->body;
+    }
+
+    /**
      * Saves new email in database
      *
      * @return $this
