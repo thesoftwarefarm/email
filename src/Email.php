@@ -178,6 +178,22 @@ class Email
     }
 
     /**
+     * @return array
+     */
+    public function getTo()
+    {
+        return $this->to;
+    }
+
+    /**
+     * @return array|string[]
+     */
+    public function getAvailableProviders()
+    {
+        return $this->available_providers;
+    }
+
+    /**
      * @return string
      */
     public function render()
