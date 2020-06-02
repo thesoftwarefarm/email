@@ -19,10 +19,9 @@
         "aws/aws-php-sns-message-validator": "^1.5"
     },
     "require-dev": {
+        "orchestra/testbench": "^5.0",
         "mockery/mockery": "^1.2",
-        "phpunit/phpunit": "^6.5",
-        "orchestra/testbench": "~3.4",
-        "symfony/google-mailer": "^4.3"
+        "symfony/google-mailer": "^5.1"
     },
     "autoload": {
         "psr-4": {

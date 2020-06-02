@@ -3,8 +3,8 @@
 namespace TsfCorp\Email\Transport;
 
 use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Mime\NamedAddress;
 use Throwable;
 use TsfCorp\Email\Models\EmailModel;
 
@@ -35,19 +35,19 @@ class GoogleSmtpTransport extends Transport
             $from = $email->decodeRecipient($email->from);
 
             $to = array_map(function ($recipient) {
-                return new NamedAddress($recipient->email, $recipient->name ? $recipient->name : '');
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $email->decodeRecipient($email->to));
 
             $cc = array_map(function ($recipient) {
-                return new NamedAddress($recipient->email, $recipient->name ? $recipient->name : '');
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $email->decodeRecipient($email->cc));
 
             $bcc = array_map(function ($recipient) {
-                return new NamedAddress($recipient->email, $recipient->name ? $recipient->name : '');
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $email->decodeRecipient($email->bcc));
 
             $symfony_email = (new Email())
-                ->from(new NamedAddress($from->email, $from->name ? $from->name : ''))
+                ->from(new Address($from->email, $from->name ? $from->name : ''))
                 ->to(...$to)
                 ->cc(...$cc)
                 ->bcc(...$bcc)
