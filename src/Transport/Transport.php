@@ -5,7 +5,7 @@ namespace TsfCorp\Email\Transport;
 use Aws\Ses\SesClient;
 use Exception;
 use Mailgun\Mailgun;
-use Symfony\Component\Mailer\Bridge\Google\Smtp\GmailTransport;
+use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
 use Symfony\Component\Mailer\Mailer;
 use TsfCorp\Email\Models\EmailModel;
 
@@ -77,7 +77,7 @@ abstract class Transport
 
         if ($email->provider == 'google-smtp')
         {
-            $symfony_transport = new GmailTransport(config('email.providers.google-smtp.email'), config('email.providers.google-smtp.password'));
+            $symfony_transport = new GmailSmtpTransport(config('email.providers.google-smtp.email'), config('email.providers.google-smtp.password'));
             $symfony_mailer = new Mailer($symfony_transport);
 
             return new GoogleSmtpTransport($symfony_mailer);
