@@ -2,8 +2,10 @@
 
 namespace TsfCorp\Email\Transport;
 
+use Mailgun\Exception\HttpClientException;
 use Mailgun\Mailgun;
 use Throwable;
+use TsfCorp\Email\Exceptions\PermanentFailureException;
 use TsfCorp\Email\Models\EmailModel;
 
 class MailgunTransport extends Transport
@@ -49,6 +51,11 @@ class MailgunTransport extends Transport
         }
         catch (Throwable $t)
         {
+            if(get_class($t) == HttpClientException::class && $t->getCode() == 400)
+            {
+                throw new PermanentFailureException();
+            }
+
             throw $t;
         }
     }
