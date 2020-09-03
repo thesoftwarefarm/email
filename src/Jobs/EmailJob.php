@@ -117,8 +117,6 @@ class EmailJob implements ShouldQueue
             {
                 $this->email->retry();
             }
-
-            $this->email->retry();
         }
     }
 }
