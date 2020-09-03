@@ -53,7 +53,7 @@ class MailgunTransport extends Transport
         {
             if(get_class($t) == HttpClientException::class && $t->getCode() == 400)
             {
-                throw new PermanentFailureException();
+                throw new PermanentFailureException($t->getMessage());
             }
 
             throw $t;
