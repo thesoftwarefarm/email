@@ -46,6 +46,8 @@ class GoogleSmtpTransport extends Transport
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $email->decodeRecipient($email->bcc));
 
+            $attachments = json_decode($email->attachments, true);
+
             $symfony_email = (new Email())
                 ->from(new Address($from->email, $from->name ? $from->name : ''))
                 ->to(...$to)
@@ -54,6 +56,12 @@ class GoogleSmtpTransport extends Transport
                 ->subject($email->subject)
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
+
+            if (!empty($attachments)) {
+                foreach ($attachments as $attachment_path) {
+                    $symfony_email->attachFromPath($attachment_path);
+                }
+            }
 
             $this->mailer->send($symfony_email);
 
