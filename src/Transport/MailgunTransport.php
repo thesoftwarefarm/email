@@ -11,13 +11,13 @@ use TsfCorp\Email\Models\EmailModel;
 class MailgunTransport extends Transport
 {
     /**
-     * @var \Mailgun\Mailgun
+     * @var Mailgun
      */
     private $mailgun;
 
     /**
      * MailgunTransport constructor.
-     * @param \Mailgun\Mailgun $mailgun
+     * @param Mailgun $mailgun
      */
     public function __construct(Mailgun $mailgun)
     {
@@ -25,8 +25,8 @@ class MailgunTransport extends Transport
     }
 
     /**
-     * @param \TsfCorp\Email\Models\EmailModel $email
-     * @throws \Throwable
+     * @param EmailModel $email
+     * @throws Throwable
      */
     public function send(EmailModel $email)
     {
@@ -35,6 +35,7 @@ class MailgunTransport extends Transport
             $to = $email->prepareToAddress();
             $cc = $email->prepareCcAddress();
             $bcc = $email->prepareBccAddress();
+            $attachments = $email->prepareAttachments();
 
             $response = $this->mailgun->messages()->send(config('email.providers.mailgun.domain'), [
                 'from'       => $email->prepareFromAddress(),
@@ -44,6 +45,7 @@ class MailgunTransport extends Transport
                 'subject'    => $email->subject,
                 'text'       => 'To view the message, please use an HTML compatible email viewer',
                 'html'       => $email->body,
+                'attachment' => $attachments
             ]);
 
             $this->remote_identifier = $response->getId();

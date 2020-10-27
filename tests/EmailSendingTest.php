@@ -7,7 +7,7 @@ use TsfCorp\Email\Email;
 use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Events\EmailSent;
 use TsfCorp\Email\Jobs\EmailJob;
-use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Transport\MailgunTransport;
 use TsfCorp\Email\Transport\Transport;
 
 class EmailSendingTest extends TestCase
@@ -98,6 +98,31 @@ class EmailSendingTest extends TestCase
         $this->assertEquals('sent', $email->status);
         $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
         $this->assertEquals('Queued. Thank you!', $email->notes);
+    }
+
+    public function test_email_with_attachment_is_successfully_sent_to_provider()
+    {
+        // create an empty file
+        fopen('tests/test.txt', 'wb');
+
+        $email = (new Email())->to('to@mail.com')->subject('testing attachments')->attachments(['tests/test.txt'])->enqueue();
+
+        $job = new EmailJob($email->getModel()->id);
+
+        $transport = Mockery::mock(Transport::class);
+        $transport->shouldReceive('send');
+        $transport->shouldReceive('getRemoteIdentifier')->andReturn('REMOTE_IDENTIFIER');
+        $transport->shouldReceive('getMessage')->andReturn('Queued. Thank you!');
+
+        $this->expectsEvents(EmailSent::class);
+        $job->sendVia($transport);
+
+        $email = $email->getModel()->fresh();
+        $this->assertEquals('sent', $email->status);
+        $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
+        $this->assertEquals('Queued. Thank you!', $email->notes);
+
+        unlink('tests/test.txt');
     }
 
     public function test_that_email_is_not_sent_in_non_production_environment()

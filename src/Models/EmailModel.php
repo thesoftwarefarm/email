@@ -3,15 +3,30 @@
 namespace TsfCorp\Email\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use TsfCorp\Email\Jobs\EmailJob;
+
+/**
+ * @property string project
+ * @property string provider
+ * @property array from
+ * @property array to
+ * @property array cc
+ * @property array bcc
+ * @property string subject
+ * @property string body
+ * @property string status
+ * @property string attachments
+ */
 
 class EmailModel extends Model
 {
     protected $table = 'emails';
 
     /**
-     * @return \Illuminate\Database\Connection
+     * @return Connection
      */
     public function getConnection()
     {
@@ -19,7 +34,7 @@ class EmailModel extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function bounces()
     {
@@ -28,7 +43,7 @@ class EmailModel extends Model
 
     /**
      * @param $identifier
-     * @return \TsfCorp\Email\Models\EmailModel|null
+     * @return EmailModel|null
      */
     public static function getByRemoteIdentifier($identifier)
     {
@@ -40,7 +55,7 @@ class EmailModel extends Model
 
     /**
      * Dispatches a job for current record
-     * @param \Carbon\Carbon|null $delay
+     * @param Carbon|null $delay
      */
     public function dispatchJob(Carbon $delay = null)
     {
@@ -139,5 +154,28 @@ class EmailModel extends Model
         return array_map(function ($recipient) {
             return sprintf('%s <%s>', $recipient->name, $recipient->email);
         }, $recipients);
+    }
+
+    /**
+     * @return array
+     */
+    public function prepareAttachments()
+    {
+        foreach (json_decode($this->attachments, true) as $attachment_path) {
+            $path_array = explode('/', $attachment_path);
+            $filename = $path_array[count($path_array) - 1];
+            $prepared_attachment = [
+                'filePath' => $attachment_path,
+                'filename' => $filename
+            ];
+
+            $prepared_attachments[] = $prepared_attachment;
+        }
+
+        if (empty($prepared_attachments)) {
+            return null;
+        }
+
+        return $prepared_attachments;
     }
 }
