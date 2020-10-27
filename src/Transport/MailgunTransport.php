@@ -35,7 +35,7 @@ class MailgunTransport extends Transport
             $to = $email->prepareToAddress();
             $cc = $email->prepareCcAddress();
             $bcc = $email->prepareBccAddress();
-            $attachments = $email->prepareAttachments();
+            $attachments = $this->prepareAttachments($email);
 
             $response = $this->mailgun->messages()->send(config('email.providers.mailgun.domain'), [
                 'from'       => $email->prepareFromAddress(),
@@ -60,5 +60,29 @@ class MailgunTransport extends Transport
 
             throw $t;
         }
+    }
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return array
+     */
+    public function prepareAttachments(EmailModel $email)
+    {
+        foreach (json_decode($email->attachments, true) as $attachment_path) {
+            $path_array = explode('/', $attachment_path);
+            $filename = $path_array[count($path_array) - 1];
+            $prepared_attachment = [
+                'filePath' => $attachment_path,
+                'filename' => $filename
+            ];
+
+            $prepared_attachments[] = $prepared_attachment;
+        }
+
+        if (empty($prepared_attachments)) {
+            return null;
+        }
+
+        return $prepared_attachments;
     }
 }
