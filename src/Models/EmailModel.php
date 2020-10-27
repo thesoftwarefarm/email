@@ -155,27 +155,4 @@ class EmailModel extends Model
             return sprintf('%s <%s>', $recipient->name, $recipient->email);
         }, $recipients);
     }
-
-    /**
-     * @return array
-     */
-    public function prepareAttachments()
-    {
-        foreach (json_decode($this->attachments, true) as $attachment_path) {
-            $path_array = explode('/', $attachment_path);
-            $filename = $path_array[count($path_array) - 1];
-            $prepared_attachment = [
-                'filePath' => $attachment_path,
-                'filename' => $filename
-            ];
-
-            $prepared_attachments[] = $prepared_attachment;
-        }
-
-        if (empty($prepared_attachments)) {
-            return null;
-        }
-
-        return $prepared_attachments;
-    }
 }
