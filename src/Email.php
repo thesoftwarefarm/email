@@ -42,9 +42,13 @@ class Email
     /**
      * @var array
      */
+    private $attachments = [];
+    /**
+     * @var array
+     */
     private $available_providers = ['mailgun', 'ses', 'google-smtp'];
     /**
-     * @var \TsfCorp\Email\Models\EmailModel|null
+     * @var EmailModel|null
      */
     private $model;
 
@@ -57,7 +61,7 @@ class Email
     /**
      * @param $provider
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function via($provider)
     {
@@ -75,7 +79,7 @@ class Email
      * @param $from
      * @param null $name
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function from($from, $name = null)
 	{
@@ -94,7 +98,7 @@ class Email
      * @param $to
      * @param null $name
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function to($to, $name = null)
 	{
@@ -113,7 +117,7 @@ class Email
      * @param $cc
      * @param null $name
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function cc($cc, $name = null)
 	{
@@ -132,7 +136,7 @@ class Email
      * @param $bcc
      * @param null $name
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function bcc($bcc, $name = null)
 	{
@@ -169,8 +173,15 @@ class Email
         return $this;
     }
 
+    public function attachments($files_paths)
+    {
+        $this->attachments = $files_paths;
+
+        return $this;
+    }
+
     /**
-     * @return \TsfCorp\Email\Models\EmailModel|null
+     * @return EmailModel|null
      */
     public function getModel()
     {
@@ -205,7 +216,7 @@ class Email
      * Saves new email in database
      *
      * @return $this
-     * @throws \Exception
+     * @throws Exception
      */
     public function enqueue()
     {
@@ -227,6 +238,7 @@ class Email
         $this->model->bcc = count($this->bcc) ? json_encode($this->bcc) : null;
         $this->model->subject = $this->subject;
         $this->model->body = $this->body;
+        $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
         $this->model->provider = $this->provider;
         $this->model->status = 'pending';
         $this->model->save();
@@ -237,7 +249,7 @@ class Email
     /**
      * Dispatches a job which will send the email
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function dispatch()
     {
