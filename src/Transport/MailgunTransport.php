@@ -11,13 +11,13 @@ use TsfCorp\Email\Models\EmailModel;
 class MailgunTransport extends Transport
 {
     /**
-     * @var Mailgun
+     * @var \Mailgun\Mailgun
      */
     private $mailgun;
 
     /**
      * MailgunTransport constructor.
-     * @param Mailgun $mailgun
+     * @param \Mailgun\Mailgun $mailgun
      */
     public function __construct(Mailgun $mailgun)
     {
@@ -25,8 +25,8 @@ class MailgunTransport extends Transport
     }
 
     /**
-     * @param EmailModel $email
-     * @throws Throwable
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @throws \Throwable
      */
     public function send(EmailModel $email)
     {

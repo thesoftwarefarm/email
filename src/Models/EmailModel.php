@@ -26,7 +26,7 @@ class EmailModel extends Model
     protected $table = 'emails';
 
     /**
-     * @return Connection
+     * @return \Illuminate\Database\Connection
      */
     public function getConnection()
     {
@@ -34,7 +34,7 @@ class EmailModel extends Model
     }
 
     /**
-     * @return HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function bounces()
     {
@@ -43,7 +43,7 @@ class EmailModel extends Model
 
     /**
      * @param $identifier
-     * @return EmailModel|null
+     * @return \TsfCorp\Email\Models\EmailModel|null
      */
     public static function getByRemoteIdentifier($identifier)
     {
@@ -55,7 +55,7 @@ class EmailModel extends Model
 
     /**
      * Dispatches a job for current record
-     * @param Carbon|null $delay
+     * @param \Carbon\Carbon|null $delay
      */
     public function dispatchJob(Carbon $delay = null)
     {
