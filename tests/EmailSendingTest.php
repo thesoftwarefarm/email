@@ -105,7 +105,7 @@ class EmailSendingTest extends TestCase
         // create an empty file
         fopen('tests/test.txt', 'wb');
 
-        $email = (new Email())->to('to@mail.com')->subject('testing attachments')->attachments(['tests/test.txt'])->enqueue();
+        $email = (new Email())->to('to@mail.com')->subject('testing attachments')->addAttachment('tests/test.txt')->enqueue();
 
         $job = new EmailJob($email->getModel()->id);
 
