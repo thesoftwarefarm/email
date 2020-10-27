@@ -48,7 +48,7 @@ class Email
      */
     private $available_providers = ['mailgun', 'ses', 'google-smtp'];
     /**
-     * @var EmailModel|null
+     * @var \TsfCorp\Email\Models\EmailModel|null
      */
     private $model;
 
@@ -61,7 +61,7 @@ class Email
     /**
      * @param $provider
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     public function via($provider)
     {
@@ -79,7 +79,7 @@ class Email
      * @param $from
      * @param null $name
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     public function from($from, $name = null)
 	{
@@ -98,7 +98,7 @@ class Email
      * @param $to
      * @param null $name
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     public function to($to, $name = null)
 	{
@@ -117,7 +117,7 @@ class Email
      * @param $cc
      * @param null $name
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     public function cc($cc, $name = null)
 	{
@@ -136,7 +136,7 @@ class Email
      * @param $bcc
      * @param null $name
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     public function bcc($bcc, $name = null)
 	{
@@ -180,7 +180,7 @@ class Email
         return $this;
     }
 
-    public function addAttachments(...$file_paths)
+    public function addAttachments(...$file_paths): Email
     {
         foreach ($file_paths as $file_path)
         {
@@ -191,7 +191,7 @@ class Email
     }
 
     /**
-     * @return EmailModel|null
+     * @return \TsfCorp\Email\Models\EmailModel|null
      */
     public function getModel()
     {
@@ -226,7 +226,7 @@ class Email
      * Saves new email in database
      *
      * @return $this
-     * @throws Exception
+     * @throws \Exception
      */
     public function enqueue()
     {
@@ -259,7 +259,7 @@ class Email
     /**
      * Dispatches a job which will send the email
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function dispatch()
     {

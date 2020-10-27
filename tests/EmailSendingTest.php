@@ -7,7 +7,7 @@ use TsfCorp\Email\Email;
 use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Events\EmailSent;
 use TsfCorp\Email\Jobs\EmailJob;
-use TsfCorp\Email\Transport\MailgunTransport;
+use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Transport\Transport;
 
 class EmailSendingTest extends TestCase
