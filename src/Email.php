@@ -173,9 +173,19 @@ class Email
         return $this;
     }
 
-    public function attachments($files_paths)
+    public function addAttachment($file_path)
     {
-        $this->attachments = $files_paths;
+        $this->attachments[] = $file_path;
+
+        return $this;
+    }
+
+    public function addAttachments(...$file_paths)
+    {
+        foreach ($file_paths as $file_path)
+        {
+            $this->attachments[] = $file_path;
+        }
 
         return $this;
     }
