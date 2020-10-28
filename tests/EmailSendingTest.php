@@ -107,11 +107,8 @@ class EmailSendingTest extends TestCase
 
         $email = (new Email())->to('to@mail.com')->subject('testing attachments')->addAttachment('tests/test.txt')->enqueue();
 
-        $email = $email->getModel()->fresh();
-        dd($email);
-        $this->assertEquals('sent', $email->status);
-        $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
-        $this->assertEquals('Queued. Thank you!', $email->notes);
+        // check if attachment was added to the email
+        self::assertEquals($email->getModel()->attachments, json_encode(['tests/test.txt']));
 
         unlink('tests/test.txt');
     }
