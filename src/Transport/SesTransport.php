@@ -29,10 +29,7 @@ class SesTransport extends Transport
      */
     public function send(EmailModel $email)
     {
-        if (!empty($email->attachments))
-        {
-            throw new Exception('Sending emails with attachment via ses it\'s not implemented yet.' );
-        }
+        $this->prepareAttachments($email);
 
         try
         {
@@ -64,6 +61,18 @@ class SesTransport extends Transport
         catch (Throwable $t)
         {
             throw $t;
+        }
+    }
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return mixed|void
+     * @throws \Exception
+     */
+    public function prepareAttachments(EmailModel $email)
+    {
+        if (!empty($email->attachments)) {
+            throw new Exception('Sending emails with attachment via ses it\'s not implemented yet.' );
         }
     }
 }

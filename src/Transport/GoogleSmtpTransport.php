@@ -46,7 +46,7 @@ class GoogleSmtpTransport extends Transport
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $email->decodeRecipient($email->bcc));
 
-            $attachments = json_decode($email->attachments, true);
+            $attachments = $this->prepareAttachments($email);
 
             $symfony_email = (new Email())
                 ->from(new Address($from->email, $from->name ? $from->name : ''))
@@ -71,5 +71,13 @@ class GoogleSmtpTransport extends Transport
         {
             throw $t;
         }
+    }
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return mixed
+     */
+    public function prepareAttachments(EmailModel $email) {
+        return json_decode($email->attachments, true);
     }
 }

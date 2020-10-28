@@ -25,6 +25,13 @@ abstract class Transport
      */
     abstract public function send(EmailModel $email);
 
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return mixed
+     */
+    abstract public function prepareAttachments(EmailModel $email);
+
     /**
      * @return string|null
      */

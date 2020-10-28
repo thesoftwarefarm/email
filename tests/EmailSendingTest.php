@@ -102,15 +102,10 @@ class EmailSendingTest extends TestCase
 
     public function test_email_with_attachment_is_successfully_sent_to_provider()
     {
-        // create an empty file
-        fopen('tests/test.txt', 'wb');
-
         $email = (new Email())->to('to@mail.com')->subject('testing attachments')->addAttachment('tests/test.txt')->enqueue();
 
         // check if attachment was added to the email
         self::assertEquals($email->getModel()->attachments, json_encode(['tests/test.txt']));
-
-        unlink('tests/test.txt');
     }
 
     public function test_that_email_is_not_sent_in_non_production_environment()
