@@ -64,19 +64,17 @@ class MailgunTransport extends Transport
 
     /**
      * @param \TsfCorp\Email\Models\EmailModel $email
-     * @return null|array
+     * @return array
      */
     public function prepareAttachments(EmailModel $email)
     {
+        $prepared_attachments = [];
+
         foreach (json_decode($email->attachments, true) as $attachment_path) {
             $prepared_attachments[] = [
                 'filePath' => $attachment_path,
                 'filename' => pathinfo($attachment_path, PATHINFO_FILENAME)
             ];
-        }
-
-        if (empty($prepared_attachments)) {
-            return null;
         }
 
         return $prepared_attachments;
