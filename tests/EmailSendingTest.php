@@ -107,17 +107,8 @@ class EmailSendingTest extends TestCase
 
         $email = (new Email())->to('to@mail.com')->subject('testing attachments')->addAttachment('tests/test.txt')->enqueue();
 
-        $job = new EmailJob($email->getModel()->id);
-
-        $transport = Mockery::mock(Transport::class);
-        $transport->shouldReceive('send');
-        $transport->shouldReceive('getRemoteIdentifier')->andReturn('REMOTE_IDENTIFIER');
-        $transport->shouldReceive('getMessage')->andReturn('Queued. Thank you!');
-
-        $this->expectsEvents(EmailSent::class);
-        $job->sendVia($transport);
-
         $email = $email->getModel()->fresh();
+        dd($email);
         $this->assertEquals('sent', $email->status);
         $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
         $this->assertEquals('Queued. Thank you!', $email->notes);
