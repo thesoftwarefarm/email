@@ -9,7 +9,7 @@
         }
     ],
     "require": {
-        "php": ">=7.0",
+        "php": ">=5.5.9",
         "ext-json": "*",
         "laravel/framework": "~5.1|~6.0|~7.0",
         "mailgun/mailgun-php": "^2.6",
