@@ -42,6 +42,10 @@ class Email
     /**
      * @var array
      */
+    private $attachments = [];
+    /**
+     * @var array
+     */
     private $available_providers = ['mailgun', 'ses', 'google-smtp'];
     /**
      * @var \TsfCorp\Email\Models\EmailModel|null
@@ -170,6 +174,31 @@ class Email
     }
 
     /**
+     * @param $file_path
+     * @return $this
+     */
+    public function addAttachment($file_path): Email
+    {
+        $this->attachments[] = $file_path;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed ...$file_paths
+     * @return $this
+     */
+    public function addAttachments(...$file_paths): Email
+    {
+        foreach ($file_paths as $file_path)
+        {
+            $this->addAttachment($file_path);
+        }
+
+        return $this;
+    }
+
+    /**
      * @return \TsfCorp\Email\Models\EmailModel|null
      */
     public function getModel()
@@ -227,6 +256,7 @@ class Email
         $this->model->bcc = count($this->bcc) ? json_encode($this->bcc) : null;
         $this->model->subject = $this->subject;
         $this->model->body = $this->body;
+        $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
         $this->model->provider = $this->provider;
         $this->model->status = 'pending';
         $this->model->save();

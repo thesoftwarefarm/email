@@ -6,6 +6,19 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use TsfCorp\Email\Jobs\EmailJob;
 
+/**
+ * @property string project
+ * @property string provider
+ * @property array from
+ * @property array to
+ * @property array cc
+ * @property array bcc
+ * @property string subject
+ * @property string body
+ * @property string status
+ * @property string attachments
+ */
+
 class EmailModel extends Model
 {
     protected $table = 'emails';

@@ -46,6 +46,8 @@ class GoogleSmtpTransport extends Transport
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $email->decodeRecipient($email->bcc));
 
+            $attachments = $this->prepareAttachments($email);
+
             $symfony_email = (new Email())
                 ->from(new Address($from->email, $from->name ? $from->name : ''))
                 ->to(...$to)
@@ -55,6 +57,12 @@ class GoogleSmtpTransport extends Transport
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
 
+            if (!empty($attachments)) {
+                foreach ($attachments as $attachment_path) {
+                    $symfony_email->attachFromPath($attachment_path);
+                }
+            }
+
             $this->mailer->send($symfony_email);
 
             $this->message = 'Queued.';
@@ -63,5 +71,13 @@ class GoogleSmtpTransport extends Transport
         {
             throw $t;
         }
+    }
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return mixed
+     */
+    public function prepareAttachments(EmailModel $email) {
+        return json_decode($email->attachments, true);
     }
 }

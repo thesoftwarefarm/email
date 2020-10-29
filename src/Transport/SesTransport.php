@@ -3,6 +3,7 @@
 namespace TsfCorp\Email\Transport;
 
 use Aws\Ses\SesClient;
+use Exception;
 use Throwable;
 use TsfCorp\Email\Models\EmailModel;
 
@@ -28,6 +29,8 @@ class SesTransport extends Transport
      */
     public function send(EmailModel $email)
     {
+        $this->prepareAttachments($email);
+
         try
         {
             $response = $this->ses->sendEmail([
@@ -58,6 +61,18 @@ class SesTransport extends Transport
         catch (Throwable $t)
         {
             throw $t;
+        }
+    }
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return mixed|void
+     * @throws \Exception
+     */
+    public function prepareAttachments(EmailModel $email)
+    {
+        if (!empty($email->attachments)) {
+            throw new Exception('Sending emails with attachment via ses it\'s not implemented yet.' );
         }
     }
 }

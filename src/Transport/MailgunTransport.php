@@ -35,6 +35,7 @@ class MailgunTransport extends Transport
             $to = $email->prepareToAddress();
             $cc = $email->prepareCcAddress();
             $bcc = $email->prepareBccAddress();
+            $attachments = $this->prepareAttachments($email);
 
             $response = $this->mailgun->messages()->send(config('email.providers.mailgun.domain'), [
                 'from'       => $email->prepareFromAddress(),
@@ -44,6 +45,7 @@ class MailgunTransport extends Transport
                 'subject'    => $email->subject,
                 'text'       => 'To view the message, please use an HTML compatible email viewer',
                 'html'       => $email->body,
+                'attachment' => $attachments
             ]);
 
             $this->remote_identifier = $response->getId();
@@ -58,5 +60,23 @@ class MailgunTransport extends Transport
 
             throw $t;
         }
+    }
+
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @return array
+     */
+    public function prepareAttachments(EmailModel $email)
+    {
+        $prepared_attachments = [];
+
+        foreach (json_decode($email->attachments, true) as $attachment_path) {
+            $prepared_attachments[] = [
+                'filePath' => $attachment_path,
+                'filename' => pathinfo($attachment_path, PATHINFO_FILENAME)
+            ];
+        }
+
+        return $prepared_attachments;
     }
 }
