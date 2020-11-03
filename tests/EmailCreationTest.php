@@ -2,8 +2,10 @@
 
 namespace TsfCorp\Email\Tests;
 
+use Mailgun\Mailgun;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Jobs\EmailJob;
+use TsfCorp\Email\Transport\MailgunTransport;
 
 class EmailCreationTest extends TestCase
 {
@@ -108,5 +110,51 @@ class EmailCreationTest extends TestCase
         $email = (new Email)->to('to@mail.com')->enqueue()->dispatch();
 
         $this->assertEquals('queued', $email->getModel()->status);
+    }
+
+    public function test_it_prepares_file_for_mailgun_transport()
+    {
+        $email = (new Email())
+            ->from('sender@mail.com', 'Sender Name')
+            ->to('to@mail.com', 'To recipient')
+            ->cc('cc@mail.com', 'Cc recipient')
+            ->bcc('bcc@mail.com', 'Bcc recipient')
+            ->subject('Subject')
+            ->body('Body')
+            ->via('mailgun')
+            ->addAttachment('tests/test.txt')
+            ->enqueue();
+
+        $model = $email->getModel()->fresh();
+
+        $transport = new MailgunTransport(new Mailgun());
+        $attachments = $transport->prepareAttachments($model);
+
+        self::assertEquals([
+            [
+                'filePath' => 'tests/test.txt',
+                'filename' => 'test.txt'
+            ]
+        ], $attachments);
+    }
+
+    public function test_it_returns_empty_array_for_no_attachments_in_mailgun_transport()
+    {
+        $email = (new Email())
+            ->from('sender@mail.com', 'Sender Name')
+            ->to('to@mail.com', 'To recipient')
+            ->cc('cc@mail.com', 'Cc recipient')
+            ->bcc('bcc@mail.com', 'Bcc recipient')
+            ->subject('Subject')
+            ->body('Body')
+            ->via('mailgun')
+            ->enqueue();
+
+        $model = $email->getModel()->fresh();
+
+        $transport = new MailgunTransport(new Mailgun());
+        $attachments = $transport->prepareAttachments($model);
+
+        self::assertEquals([], $attachments);
     }
 }
