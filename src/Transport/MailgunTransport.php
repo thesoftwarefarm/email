@@ -70,11 +70,13 @@ class MailgunTransport extends Transport
     {
         $prepared_attachments = [];
 
-        foreach (json_decode($email->attachments, true) as $attachment_path) {
-            $prepared_attachments[] = [
-                'filePath' => $attachment_path,
-                'filename' => pathinfo($attachment_path, PATHINFO_BASENAME)
-            ];
+        if(!empty($email->attachments)) {
+            foreach (json_decode($email->attachments, true) as $attachment_path) {
+                $prepared_attachments[] = [
+                    'filePath' => $attachment_path,
+                    'filename' => pathinfo($attachment_path, PATHINFO_BASENAME)
+                ];
+            }
         }
 
         return $prepared_attachments;
