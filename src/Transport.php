@@ -1,31 +1,46 @@
 <?php
 
-namespace TsfCorp\Email\Transport;
+namespace TsfCorp\Email;
 
-use Aws\Ses\SesClient;
+use AsyncAws\Ses\SesClient;
 use Exception;
-use Mailgun\Mailgun;
+use Symfony\Component\Mailer\Bridge\Amazon\Transport\SesApiAsyncAwsTransport;
 use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
-use Symfony\Component\Mailer\Mailer;
+use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunApiTransport;
+use Symfony\Component\Mailer\Transport\TransportInterface;
+use Symfony\Component\Mime\Address;
+use Throwable;
 use TsfCorp\Email\Models\EmailModel;
 
 class Transport
 {
     /**
+     * @var \Symfony\Component\Mailer\Transport\TransportInterface
+     */
+    private $provider;
+    /**
      * @var string|null
      */
-    protected $remote_identifier;
+    private $remote_identifier;
     /**
      * @var string
      */
-    protected $message;
+    private $message;
 
     /**
-     * @param \Symfony\Component\Mailer\Mailer $mailer
+     * @param \Symfony\Component\Mailer\Transport\TransportInterface $provider
      */
-    public function __construct(Mailer $mailer)
+    public function __construct(TransportInterface $provider)
     {
-        $this->mailer = $mailer;
+        $this->provider = $provider;
+    }
+
+    /**
+     * @return \Symfony\Component\Mailer\Transport\TransportInterface
+     */
+    public function getProvider()
+    {
+        return $this->provider;
     }
 
     /**
@@ -44,53 +59,105 @@ class Transport
         return $this->message;
     }
 
-    public function send()
+    /**
+     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
+     * @throws \Throwable
+     */
+    public function send(EmailModel $email)
     {
+        try
+        {
+            $from = $this->fromJson($email->from);
 
+            $to = array_map(function ($recipient) {
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
+            }, $this->fromJson($email->to));
+
+            $cc = array_map(function ($recipient) {
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
+            }, $this->fromJson($email->cc));
+
+            $bcc = array_map(function ($recipient) {
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
+            }, $this->fromJson($email->bcc));
+
+            $symfony_email = (new \Symfony\Component\Mime\Email())
+                ->from(new Address($from->email, $from->name ? $from->name : ''))
+                ->to(...$to)
+                ->cc(...$cc)
+                ->bcc(...$bcc)
+                ->subject($email->subject)
+                ->text('To view the message, please use an HTML compatible email viewer')
+                ->html($email->body);
+
+            foreach($this->fromJson($email->attachments) as $attachment)
+            {
+                $symfony_email->attachFromPath($attachment, basename($attachment));
+            }
+
+            $response = $this->provider->send($symfony_email);
+
+            $this->remote_identifier = $response->getMessageId();
+            $this->message = 'Queued';
+        }
+        catch (Throwable $t)
+        {
+            throw $t;
+        }
     }
 
     /**
-     * Determine with which third party service this email should be sent
-     *
      * @param \TsfCorp\Email\Models\EmailModel $email
-     * @return \TsfCorp\Email\Transport\Transport
+     * @return \TsfCorp\Email\Transport
      * @throws \Exception
      */
     public static function resolveFor(EmailModel $email)
     {
+        $provider = null;
+
         if ($email->provider == 'mailgun')
         {
-            if (config('email.providers.mailgun.api_url'))
-                $mailgun = Mailgun::create(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.api_url'));
-            else
-                $mailgun = Mailgun::create(config('email.providers.mailgun.api_key'));
-
-            return new MailgunTransport($mailgun);
+            $provider = new MailgunApiTransport(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.domain'));
         }
 
         if ($email->provider == 'ses')
         {
-            $ses = new SesClient([
+            $client = new SesClient([
+                'accessKeyId' => config('email.providers.ses.key'),
+                'accessKeySecret' => config('email.providers.ses.secret'),
                 'region' => config('email.providers.ses.region'),
-                'version' => 'latest',
-                'service' => 'email',
-                'credentials' => [
-                    'key' => config('email.providers.ses.key'),
-                    'secret' => config('email.providers.ses.secret'),
-                ],
             ]);
 
-            return new SesTransport($ses);
+            $provider = new SesApiAsyncAwsTransport($client);
         }
 
         if ($email->provider == 'google-smtp')
         {
-            $symfony_transport = new GmailSmtpTransport(config('email.providers.google-smtp.email'), config('email.providers.google-smtp.password'));
-            $symfony_mailer = new Mailer($symfony_transport);
-
-            return new GoogleSmtpTransport($symfony_mailer);
+            $provider = new GmailSmtpTransport(config('email.providers.google-smtp.email'), config('email.providers.google-smtp.password'));
         }
 
-        throw new Exception('Invalid email provider');
+        if(!$provider)
+        {
+            throw new Exception('Invalid email provider');
+        }
+
+        return new static($provider);
+    }
+
+    /**
+     * @param $json
+     * @return array
+     */
+    private function fromJson($json)
+    {
+        $decoded = json_decode($json);
+
+        if(json_last_error() !== JSON_ERROR_NONE)
+        {
+            $decoded = [];
+        }
+
+        return $decoded;
     }
 }

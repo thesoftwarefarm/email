@@ -2,14 +2,11 @@
 
 namespace TsfCorp\Email\Tests;
 
-
-use Illuminate\Support\Arr;
-use TsfCorp\Email\Email;
+use Symfony\Component\Mailer\Bridge\Amazon\Transport\SesApiAsyncAwsTransport;
+use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
+use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunApiTransport;
 use TsfCorp\Email\Models\EmailModel;
-use TsfCorp\Email\Transport\GoogleSmtpTransport;
-use TsfCorp\Email\Transport\MailgunTransport;
-use TsfCorp\Email\Transport\SesTransport;
-use TsfCorp\Email\Transport\Transport;
+use TsfCorp\Email\Transport;
 
 class TransportTest extends TestCase
 {
@@ -29,7 +26,7 @@ class TransportTest extends TestCase
 
         $transport = Transport::resolveFor($email);
 
-        $this->assertInstanceOf(MailgunTransport::class, $transport);
+        $this->assertInstanceOf(MailgunApiTransport::class, $transport->getProvider());
     }
 
     public function test_it_resolves_ses_transport()
@@ -39,7 +36,7 @@ class TransportTest extends TestCase
 
         $transport = Transport::resolveFor($email);
 
-        $this->assertInstanceOf(SesTransport::class, $transport);
+        $this->assertInstanceOf(SesApiAsyncAwsTransport::class, $transport->getProvider());
     }
 
     public function test_it_resolves_google_smtp_transport()
@@ -49,6 +46,6 @@ class TransportTest extends TestCase
 
         $transport = Transport::resolveFor($email);
 
-        $this->assertInstanceOf(GoogleSmtpTransport::class, $transport);
+        $this->assertInstanceOf(GmailSmtpTransport::class, $transport->getProvider());
     }
 }

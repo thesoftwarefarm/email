@@ -8,13 +8,12 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Events\EmailSent;
 use TsfCorp\Email\Exceptions\PermanentFailureException;
 use TsfCorp\Email\Models\EmailModel;
-use TsfCorp\Email\Transport\Transport;
+use TsfCorp\Email\Transport;
 
 class EmailJob implements ShouldQueue
 {
@@ -68,7 +67,7 @@ class EmailJob implements ShouldQueue
     }
 
     /**
-     * @param \TsfCorp\Email\Transport\Transport $transport
+     * @param \TsfCorp\Email\Transport $transport
      */
     public function sendVia(Transport $transport)
     {
@@ -86,7 +85,7 @@ class EmailJob implements ShouldQueue
         if($this->email->retries >= config('email.max_retries'))
         {
             $this->email->status = 'failed';
-            $this->email->notes = 'Max retry limit reached.';
+            $this->email->notes = 'Max retry limit reached. '.$this->email->notes;
             $this->email->save();
 
             event(new EmailFailed($this->email));

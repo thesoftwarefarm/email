@@ -7,8 +7,7 @@ use TsfCorp\Email\Email;
 use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Events\EmailSent;
 use TsfCorp\Email\Jobs\EmailJob;
-use TsfCorp\Email\Models\EmailModel;
-use TsfCorp\Email\Transport\Transport;
+use TsfCorp\Email\Transport;
 
 class EmailSendingTest extends TestCase
 {
@@ -57,7 +56,7 @@ class EmailSendingTest extends TestCase
 
         $email = $email->getModel()->fresh();
         $this->assertEquals('failed', $email->status);
-        $this->assertEquals('Max retry limit reached.', $email->notes);
+        $this->assertEquals('Max retry limit reached. ', $email->notes);
     }
 
     public function test_email_is_retried_if_sending_to_provider_failed()
@@ -118,4 +117,47 @@ class EmailSendingTest extends TestCase
         $this->assertEquals('failed', $email->status);
         $this->assertEquals('Sending email is disabled in non production environment.', $email->notes);
     }
+
+//    /**
+//     * Method to do end to end testing with email providers.
+//     *
+//     * @throws \Exception
+//     */
+//    public function test_end_to_end()
+//    {
+//        $this->app['config']->set('email.providers', [
+//            'mailgun' => [
+//                'api_key' => 'mailgun_api_key',
+//                'domain' => '',
+//            ],
+//            'ses' => [
+//                'key' => 'ses_api_secret',
+//                'secret' => 'ses_api_secret',
+//                'region' => 'eu-west-1',
+//            ],
+//            'google-smtp' => [
+//                'email' => 'me@mail.com',
+//                'password' => 'mypassword',
+//            ]
+//        ]);
+//
+//        $this->app['config']->set('email.from', [
+//            'address' => 'default@address.com',
+//            'name' => 'Default Name'
+//        ]);
+//
+//        $email = (new Email())
+//            ->subject('My email')
+//            ->to('mail@mail.com')
+//            ->body('<h1>Body</h1>')
+//            ->addAttachment(__DIR__.'/../stubs/attachment.txt')
+//            ->via('mailgun')
+//            ->enqueue();
+//
+//        $job = new EmailJob($email->getModel()->id);
+//
+//        $job->handle();
+//
+//        dd($email->getModel()->fresh()->toArray());
+//    }
 }
