@@ -51,6 +51,7 @@ class EmailCreationTest extends TestCase
             ->bcc('bcc@mail.com', 'Bcc recipient')
             ->subject('Subject')
             ->body('Body')
+            ->addAttachment('attachment.txt')
             ->via('mailgun')
             ->enqueue();
 
@@ -60,6 +61,7 @@ class EmailCreationTest extends TestCase
         $to = json_decode($model->to);
         $cc = json_decode($model->cc);
         $bcc = json_decode($model->bcc);
+        $attachments = json_decode($model->attachments);
 
         $this->assertEquals(config('email.project'), $model->project);
 
@@ -81,6 +83,9 @@ class EmailCreationTest extends TestCase
         $this->assertEquals('Subject', $model->subject);
         $this->assertEquals('Body', $model->body);
         $this->assertEquals('mailgun', $model->provider);
+
+        $this->assertCount(1, $attachments);
+        $this->assertEquals('attachment.txt', $attachments[0]);
 
         $this->assertEquals('pending', $model->status);
     }

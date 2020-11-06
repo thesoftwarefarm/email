@@ -9,7 +9,7 @@ use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
 use Symfony\Component\Mailer\Mailer;
 use TsfCorp\Email\Models\EmailModel;
 
-abstract class Transport
+class Transport
 {
     /**
      * @var string|null
@@ -21,9 +21,12 @@ abstract class Transport
     protected $message;
 
     /**
-     * @param \TsfCorp\Email\Models\EmailModel $email
+     * @param \Symfony\Component\Mailer\Mailer $mailer
      */
-    abstract public function send(EmailModel $email);
+    public function __construct(Mailer $mailer)
+    {
+        $this->mailer = $mailer;
+    }
 
     /**
      * @return string|null
@@ -39,6 +42,11 @@ abstract class Transport
     public function getMessage()
     {
         return $this->message;
+    }
+
+    public function send()
+    {
+
     }
 
     /**
