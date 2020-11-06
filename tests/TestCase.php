@@ -6,7 +6,7 @@ use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -38,7 +38,6 @@ class TestCase extends Orchestra
 
         $app['config']->set('email.providers', [
             'mailgun' => [
-                'api_url' => '',
                 'api_key' => 'mailgun_api_key',
                 'domain' => '',
             ],
