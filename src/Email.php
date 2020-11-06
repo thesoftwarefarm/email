@@ -42,6 +42,10 @@ class Email
     /**
      * @var array
      */
+    private $attachments = [];
+    /**
+     * @var array
+     */
     private $available_providers = ['mailgun', 'ses', 'google-smtp'];
     /**
      * @var \TsfCorp\Email\Models\EmailModel|null
@@ -56,7 +60,7 @@ class Email
 
     /**
      * @param $provider
-     * @return $this
+     * @return \TsfCorp\Email\Email
      * @throws \Exception
      */
     public function via($provider)
@@ -74,7 +78,7 @@ class Email
     /**
      * @param $from
      * @param null $name
-     * @return $this
+     * @return \TsfCorp\Email\Email
      * @throws \Exception
      */
     public function from($from, $name = null)
@@ -93,7 +97,7 @@ class Email
     /**
      * @param $to
      * @param null $name
-     * @return $this
+     * @return \TsfCorp\Email\Email
      * @throws \Exception
      */
     public function to($to, $name = null)
@@ -112,7 +116,7 @@ class Email
     /**
      * @param $cc
      * @param null $name
-     * @return $this
+     * @return \TsfCorp\Email\Email
      * @throws \Exception
      */
     public function cc($cc, $name = null)
@@ -131,7 +135,7 @@ class Email
     /**
      * @param $bcc
      * @param null $name
-     * @return $this
+     * @return \TsfCorp\Email\Email
      * @throws \Exception
      */
     public function bcc($bcc, $name = null)
@@ -149,7 +153,7 @@ class Email
 
     /**
      * @param $subject
-     * @return $this
+     * @return \TsfCorp\Email\Email
      */
     public function subject($subject)
 	{
@@ -160,11 +164,36 @@ class Email
 
     /**
      * @param $body
-     * @return $this
+     * @return \TsfCorp\Email\Email
      */
     public function body($body)
     {
         $this->body = $body;
+
+        return $this;
+    }
+
+    /**
+     * @param $file_path
+     * @return \TsfCorp\Email\Email
+     */
+    public function addAttachment($file_path)
+    {
+        $this->attachments[] = $file_path;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed ...$file_paths
+     * @return \TsfCorp\Email\Email
+     */
+    public function addAttachments(...$file_paths)
+    {
+        foreach ($file_paths as $file_path)
+        {
+            $this->addAttachment($file_path);
+        }
 
         return $this;
     }
@@ -204,7 +233,7 @@ class Email
     /**
      * Saves new email in database
      *
-     * @return $this
+     * @return \TsfCorp\Email\Email
      * @throws \Exception
      */
     public function enqueue()
@@ -227,6 +256,7 @@ class Email
         $this->model->bcc = count($this->bcc) ? json_encode($this->bcc) : null;
         $this->model->subject = $this->subject;
         $this->model->body = $this->body;
+        $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
         $this->model->provider = $this->provider;
         $this->model->status = 'pending';
         $this->model->save();
