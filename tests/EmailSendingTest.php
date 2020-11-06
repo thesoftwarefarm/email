@@ -129,6 +129,7 @@ class EmailSendingTest extends TestCase
 //            'mailgun' => [
 //                'api_key' => 'mailgun_api_key',
 //                'domain' => '',
+//                'region' => '',
 //            ],
 //            'ses' => [
 //                'key' => 'ses_api_secret',

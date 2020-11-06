@@ -118,7 +118,7 @@ class Transport
 
         if ($email->provider == 'mailgun')
         {
-            $provider = new MailgunApiTransport(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.domain'));
+            $provider = new MailgunApiTransport(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.domain'), config('email.providers.mailgun.region'));
         }
 
         if ($email->provider == 'ses')

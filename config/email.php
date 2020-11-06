@@ -43,6 +43,7 @@ return [
         'mailgun' => [
             'api_key' => env('MAILGUN_API_KEY'),
             'domain' => env('MAILGUN_DOMAIN'),
+            'region' => env('MAILGUN_REGION'),
         ],
         'ses' => [
             'key' => env('AWS_SES_KEY'),
