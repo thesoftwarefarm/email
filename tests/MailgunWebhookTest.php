@@ -15,7 +15,7 @@ class MailgunWebhookTest extends TestCase
         $model->save();
 
         $time = time();
-        $token = str_random();
+        $token = 'TOKEN';
         $signature = hash_hmac('SHA256', $time.$token, config('email.providers.mailgun.api_key'));
 
         $this->call('POST', '/webhook-mailgun', [
