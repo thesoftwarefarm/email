@@ -48,7 +48,7 @@ class InstallCommand extends Command
 
         if ($this->confirm('Do you wish to publish migration file?'))
         {
-            $this->comment('Publishing graylog migration file...');
+            $this->comment('Publishing migration file...');
             $this->callSilent('vendor:publish', ['--tag' => ['email-migrations']]);
         }
 
