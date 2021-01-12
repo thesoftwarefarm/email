@@ -11,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Throwable;
 use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Events\EmailSent;
-use TsfCorp\Email\Exceptions\PermanentFailureException;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Transport;
 
@@ -112,10 +111,7 @@ class EmailJob implements ShouldQueue
 
             event(new EmailFailed($this->email, $t));
 
-            if(get_class($t) != PermanentFailureException::class)
-            {
-                $this->email->retry();
-            }
+            $this->email->retry();
         }
     }
 }

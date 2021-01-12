@@ -280,4 +280,13 @@ class Email
 
         return $this;
     }
+
+    /**
+     * @return \TsfCorp\Email\Email
+     * @throws \Exception
+     */
+    public function send()
+    {
+        return $this->enqueue()->dispatch();
+    }
 }
