@@ -10,7 +10,7 @@ class CreateEmailsTable extends Migration
     {
         Schema::create('emails', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('project')->index();
+            $table->string('project')->nullable()->index();
             $table->text('from');
             $table->text('to');
             $table->text('cc')->nullable();
