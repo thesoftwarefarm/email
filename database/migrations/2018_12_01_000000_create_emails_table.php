@@ -17,7 +17,7 @@ class CreateEmailsTable extends Migration
             $table->text('bcc')->index()->nullable();
             $table->text('attachments')->nullable();
             $table->string('subject')->nullable()->index();
-            $table->longText('body')->index()->nullable();
+            $table->longText('body')->nullable();
             $table->string('provider')->default('mailgun')->index();
             $table->enum('status', ['pending', 'queued', 'sent', 'failed'])->default('pending')->index();
             $table->integer('retries')->default(0)->index();
