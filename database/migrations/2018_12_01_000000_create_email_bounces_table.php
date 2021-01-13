@@ -10,8 +10,8 @@ class CreateEmailBouncesTable extends Migration
     {
         Schema::create('email_bounces', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('email_id')->unsigned()->index();
-            $table->string('recipient')->nullable();
+            $table->unsignedBigInteger('email_id')->unsigned()->index();
+            $table->string('recipient')->nullable()->index();
             $table->string('code')->nullable();
             $table->string('reason')->nullable();
             $table->text('description')->nullable();
