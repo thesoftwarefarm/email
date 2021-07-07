@@ -85,7 +85,8 @@ class EmailCreationTest extends TestCase
         $this->assertEquals('mailgun', $model->provider);
 
         $this->assertCount(1, $attachments);
-        $this->assertEquals('attachment.txt', $attachments[0]);
+        $this->assertEquals('local', $attachments[0]->disk);
+        $this->assertEquals('attachment.txt', $attachments[0]->path);
 
         $this->assertEquals('pending', $model->status);
     }

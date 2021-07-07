@@ -11,6 +11,7 @@ class CreateEmailsTable extends Migration
         Schema::create('emails', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('project')->nullable()->index();
+            $table->uuid('uuid');
             $table->text('from');
             $table->text('to');
             $table->text('cc')->nullable();

@@ -3,6 +3,7 @@
 namespace TsfCorp\Email;
 
 use Exception;
+use Illuminate\Support\Str;
 use TsfCorp\Email\Models\EmailModel;
 
 class Email
@@ -11,6 +12,10 @@ class Email
      * @var string
      */
     private $project;
+    /**
+     * @var string
+     */
+    private $uuid;
     /**
      * @var string
      */
@@ -56,6 +61,7 @@ class Email
     {
         $this->project = config('email.project');
         $this->provider = config('email.default_provider');
+        $this->uuid = Str::uuid();
     }
 
     /**
@@ -175,25 +181,15 @@ class Email
 
     /**
      * @param $file_path
+     * @param string $disk
      * @return \TsfCorp\Email\Email
      */
-    public function addAttachment($file_path)
+    public function addAttachment($file_path, $disk = 'local')
     {
-        $this->attachments[] = $file_path;
-
-        return $this;
-    }
-
-    /**
-     * @param mixed ...$file_paths
-     * @return \TsfCorp\Email\Email
-     */
-    public function addAttachments(...$file_paths)
-    {
-        foreach ($file_paths as $file_path)
-        {
-            $this->addAttachment($file_path);
-        }
+        $this->attachments[] = [
+            'disk' => $disk,
+            'path' => $file_path,
+        ];
 
         return $this;
     }
@@ -225,6 +221,14 @@ class Email
     /**
      * @return string
      */
+    public function getUuid()
+    {
+        return $this->uuid;
+    }
+
+    /**
+     * @return string
+     */
     public function render()
     {
         return $this->body;
@@ -250,6 +254,7 @@ class Email
 
         $this->model = new EmailModel;
         $this->model->project = $this->project;
+        $this->model->uuid = $this->uuid;
         $this->model->from = json_encode($this->from);
         $this->model->to = json_encode($this->to);
         $this->model->cc = count($this->cc) ? json_encode($this->cc) : null;
