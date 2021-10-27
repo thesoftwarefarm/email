@@ -14,7 +14,6 @@ class CreateEmailsTable extends Migration
             $table->uuid('uuid');
             $table->text('from');
             $table->text('to');
-            $table->text('reply_to');
             $table->text('cc')->nullable();
             $table->text('bcc')->nullable();
             $table->text('attachments')->nullable();
