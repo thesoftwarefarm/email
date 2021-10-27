@@ -4,6 +4,7 @@ namespace TsfCorp\Email;
 
 use AsyncAws\Ses\SesClient;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mailer\Bridge\Amazon\Transport\SesApiAsyncAwsTransport;
 use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
 use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunApiTransport;
@@ -91,9 +92,23 @@ class Transport
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
 
-            foreach($this->fromJson($email->attachments) as $attachment)
+            try
             {
-                $symfony_email->attachFromPath($attachment, basename($attachment));
+                foreach($this->fromJson($email->attachments) as $attachment)
+                {
+                    if($attachment->disk == 'local')
+                    {
+                        $symfony_email->attachFromPath($attachment->path, basename($attachment->path));
+                    }
+                    else
+                    {
+                        $symfony_email->attach(Storage::disk($attachment->disk)->readStream($attachment->path), basename($attachment->path));
+                    }
+                }
+            }
+            catch (Throwable $e)
+            {
+                // do not rethrow the error in case a file can't be attached.
             }
 
             $response = $this->provider->send($symfony_email);

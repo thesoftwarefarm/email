@@ -6,6 +6,10 @@ This package was designed to work in a standalone project or in a cluster of pro
 
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master project. This can be kept alive with `supervisor`
 
+#Upgrade from 2.x to 3.x
+* add a new uuid column in emails table
+* addAttachments(...$file_paths) method was removed
+
 # Installation
 
 Require this package in your `composer.json` and update composer. Run the following command:
