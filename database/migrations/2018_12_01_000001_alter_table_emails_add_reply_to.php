@@ -9,7 +9,7 @@ class AlterTableEmailsAddReplyTo extends Migration
     public function up()
     {
         Schema::table('emails', function (Blueprint $table) {
-            $table->text('reply_to')->after('to');
+            $table->text('reply_to')->nullable()->after('to');
         });
     }
 
