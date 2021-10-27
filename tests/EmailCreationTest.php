@@ -47,6 +47,7 @@ class EmailCreationTest extends TestCase
         $email = (new Email())
             ->from('sender@mail.com', 'Sender Name')
             ->to('to@mail.com', 'To recipient')
+            ->replyTo('reply_to@mail.com', 'Reply Name')
             ->cc('cc@mail.com', 'Cc recipient')
             ->bcc('bcc@mail.com', 'Bcc recipient')
             ->subject('Subject')
@@ -59,6 +60,7 @@ class EmailCreationTest extends TestCase
 
         $from = json_decode($model->from);
         $to = json_decode($model->to);
+        $reply = json_decode($model->reply_to);
         $cc = json_decode($model->cc);
         $bcc = json_decode($model->bcc);
         $attachments = json_decode($model->attachments);
@@ -71,6 +73,9 @@ class EmailCreationTest extends TestCase
         $this->assertCount(1, $to);
         $this->assertEquals('to@mail.com', $to[0]->email);
         $this->assertEquals('To recipient', $to[0]->name);
+
+        $this->assertEquals('reply_to@mail.com', $reply->email);
+        $this->assertEquals('Reply Name', $reply->name);
 
         $this->assertCount(1, $cc);
         $this->assertEquals('cc@mail.com', $cc[0]->email);

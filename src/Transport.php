@@ -70,6 +70,7 @@ class Transport
         try
         {
             $from = $this->fromJson($email->from);
+            $reply_to = $this->fromJson($email->reply_to);
 
             $to = array_map(function ($recipient) {
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
@@ -85,6 +86,7 @@ class Transport
 
             $symfony_email = (new \Symfony\Component\Mime\Email())
                 ->from(new Address($from->email, $from->name ? $from->name : ''))
+                ->replyTo(new Address($reply_to->email, $reply_to->name ? $reply_to->name : ''))
                 ->to(...$to)
                 ->cc(...$cc)
                 ->bcc(...$bcc)
