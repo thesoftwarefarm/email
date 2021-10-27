@@ -21,6 +21,7 @@ class TestCase extends Orchestra
 
         (new \CreateEmailsTable())->up();
         (new \CreateEmailBouncesTable())->up();
+        (new \AlterTableEmailsAddReplyTo())->up();
     }
 
     protected function getEnvironmentSetUp($app)
