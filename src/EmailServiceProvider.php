@@ -28,8 +28,7 @@ class EmailServiceProvider extends ServiceProvider
 
         if($this->app->runningInConsole())
         {
-            $this->loadMigrationsFrom(__DIR__ .
-                '/database/migrations');
+            $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
             $this->publishes([
                 __DIR__ . '/../config/email.php' => config_path('email.php')
