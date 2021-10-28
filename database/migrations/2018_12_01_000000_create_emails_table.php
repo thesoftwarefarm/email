@@ -11,17 +11,19 @@ class CreateEmailsTable extends Migration
         Schema::create('emails', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('project')->nullable()->index();
+            $table->uuid('uuid');
             $table->text('from');
             $table->text('to');
             $table->text('cc')->nullable();
             $table->text('bcc')->nullable();
+            $table->text('reply_to')->nullable();
             $table->text('attachments')->nullable();
             $table->string('subject')->nullable()->index();
             $table->longText('body')->nullable();
             $table->string('provider')->default('mailgun')->index();
-            $table->enum('status', ['pending', 'queued', 'sent', 'failed'])->default('pending');
+            $table->enum('status', ['pending', 'queued', 'sent', 'failed'])->default('pending')->index();
             $table->integer('retries')->default(0)->index();
-            $table->string('remote_identifier')->nullable();
+            $table->string('remote_identifier')->nullable()->index();
             $table->text('notes')->nullable();
             $table->integer('bounces_count')->default(0)->index();
             $table->timestamps();

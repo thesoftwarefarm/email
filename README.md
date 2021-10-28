@@ -6,6 +6,13 @@ This package was designed to work in a standalone project or in a cluster of pro
 
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master project. This can be kept alive with `supervisor`
 
+# Upgrade from 3.x to 4.x
+* add a new TEXT "reply_to" nullable column in emails table
+
+# Upgrade from 2.x to 3.x
+* add a new "uuid" column in emails table
+* addAttachments(...$file_paths) method was removed
+
 # Installation
 
 Require this package in your `composer.json` and update composer. Run the following command:
@@ -57,7 +64,7 @@ Save the message and schedule a job to send the email
 $email->enqueue()->dispatch();
 ```
 
-#Email Providers
+# Email Providers
 - Mailgun
 - Amazon SES
 - Google SMTP
@@ -67,7 +74,7 @@ Note 1: In order to use Google SMTP you need at least PHP 7.1.3 and also require
 Note 2: If your Google Account has 2FA enabled you need to generate an "App Password" in your Google Acccount
 ```
 
-#Bounce Webhooks
+# Bounce Webhooks
 If an email could not be sent to a recipient, the email provider can notify you about this. This package handles permanent failures webhooks for you. 
 
 #### Mailgun
