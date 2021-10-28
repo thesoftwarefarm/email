@@ -11,10 +11,12 @@ class CreateEmailsTable extends Migration
         Schema::create('emails', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('project')->nullable()->index();
+            $table->uuid('uuid');
             $table->text('from');
             $table->text('to');
             $table->text('cc')->nullable();
             $table->text('bcc')->nullable();
+            $table->text('reply_to')->nullable();
             $table->text('attachments')->nullable();
             $table->string('subject')->nullable()->index();
             $table->longText('body')->nullable();

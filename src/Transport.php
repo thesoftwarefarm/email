@@ -4,6 +4,7 @@ namespace TsfCorp\Email;
 
 use AsyncAws\Ses\SesClient;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mailer\Bridge\Amazon\Transport\SesApiAsyncAwsTransport;
 use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
 use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunApiTransport;
@@ -82,18 +83,37 @@ class Transport
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $this->fromJson($email->bcc));
 
+            $reply_to = array_map(function ($recipient) {
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
+            }, $this->fromJson($email->reply_to));
+
             $symfony_email = (new \Symfony\Component\Mime\Email())
                 ->from(new Address($from->email, $from->name ? $from->name : ''))
                 ->to(...$to)
                 ->cc(...$cc)
                 ->bcc(...$bcc)
+                ->replyTo(...$reply_to)
                 ->subject($email->subject)
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
 
-            foreach($this->fromJson($email->attachments) as $attachment)
+            try
             {
-                $symfony_email->attachFromPath($attachment, basename($attachment));
+                foreach($this->fromJson($email->attachments) as $attachment)
+                {
+                    if($attachment->disk == 'local')
+                    {
+                        $symfony_email->attachFromPath($attachment->path, basename($attachment->path));
+                    }
+                    else
+                    {
+                        $symfony_email->attach(Storage::disk($attachment->disk)->readStream($attachment->path), basename($attachment->path));
+                    }
+                }
+            }
+            catch (Throwable $e)
+            {
+                // do not rethrow the error in case a file can't be attached.
             }
 
             $response = $this->provider->send($symfony_email);
