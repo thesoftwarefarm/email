@@ -16,6 +16,7 @@ class CreateEmailsTable extends Migration
             $table->text('to');
             $table->text('cc')->nullable();
             $table->text('bcc')->nullable();
+            $table->text('reply_to')->nullable();
             $table->text('attachments')->nullable();
             $table->string('subject')->nullable()->index();
             $table->longText('body')->nullable();

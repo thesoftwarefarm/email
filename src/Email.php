@@ -37,6 +37,10 @@ class Email
      */
     private $bcc = [];
     /**
+     * @var array
+     */
+    private $reply_to = [];
+    /**
      * @var string
      */
     private $subject;
@@ -158,6 +162,25 @@ class Email
 	}
 
     /**
+     * @param $reply_to
+     * @param null $name
+     * @return \TsfCorp\Email\Email
+     * @throws \Exception
+     */
+    public function replyTo($reply_to, $name = null)
+    {
+        if (empty($reply_to) || ! filter_var($reply_to, FILTER_VALIDATE_EMAIL))
+            throw new Exception('Invalid reply to address: ' . $reply_to);
+
+        $this->reply_to[] = [
+            'email' => $reply_to,
+            'name' => $name,
+        ];
+
+        return $this;
+    }
+
+    /**
      * @param $subject
      * @return \TsfCorp\Email\Email
      */
@@ -259,6 +282,7 @@ class Email
         $this->model->to = json_encode($this->to);
         $this->model->cc = count($this->cc) ? json_encode($this->cc) : null;
         $this->model->bcc = count($this->bcc) ? json_encode($this->bcc) : null;
+        $this->model->reply_to = count($this->reply_to) ? json_encode($this->reply_to) : null;
         $this->model->subject = $this->subject;
         $this->model->body = $this->body;
         $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;

@@ -83,11 +83,16 @@ class Transport
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $this->fromJson($email->bcc));
 
+            $reply_to = array_map(function ($recipient) {
+                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
+            }, $this->fromJson($email->reply_to));
+
             $symfony_email = (new \Symfony\Component\Mime\Email())
                 ->from(new Address($from->email, $from->name ? $from->name : ''))
                 ->to(...$to)
                 ->cc(...$cc)
                 ->bcc(...$bcc)
+                ->replyTo(...$reply_to)
                 ->subject($email->subject)
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
