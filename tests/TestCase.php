@@ -17,11 +17,9 @@ class TestCase extends Orchestra
     {
         include_once __DIR__.'/../database/migrations/2018_12_01_000000_create_emails_table.php';
         include_once __DIR__.'/../database/migrations/2018_12_01_000000_create_email_bounces_table.php';
-        include_once __DIR__.'/../database/migrations/2018_12_01_000001_alter_table_emails_add_reply_to.php';
 
         (new \CreateEmailsTable())->up();
         (new \CreateEmailBouncesTable())->up();
-        (new \AlterTableEmailsAddReplyTo())->up();
     }
 
     protected function getEnvironmentSetUp($app)

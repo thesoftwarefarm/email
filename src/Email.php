@@ -31,15 +31,15 @@ class Email
     /**
      * @var array
      */
-    private $reply_to = [];
-    /**
-     * @var array
-     */
     private $cc = [];
     /**
      * @var array
      */
     private $bcc = [];
+    /**
+     * @var array
+     */
+    private $reply_to = [];
     /**
      * @var string
      */
@@ -124,25 +124,6 @@ class Email
 	}
 
     /**
-     * @param $reply_to
-     * @return \TsfCorp\Email\Email
-     * @param null $name
-     * @throws \Exception
-     */
-    public function replyTo($reply_to, $name = null)
-    {
-        if (empty($reply_to) || ! filter_var($reply_to, FILTER_VALIDATE_EMAIL))
-            throw new Exception('Invalid reply to address: ' . $reply_to);
-
-        $this->reply_to = [
-            'email' => $reply_to,
-            'name' => $name,
-        ];
-
-        return $this;
-    }
-
-    /**
      * @param $cc
      * @param null $name
      * @return \TsfCorp\Email\Email
@@ -179,6 +160,25 @@ class Email
 
 		return $this;
 	}
+
+    /**
+     * @param $reply_to
+     * @param null $name
+     * @return \TsfCorp\Email\Email
+     * @throws \Exception
+     */
+    public function replyTo($reply_to, $name = null)
+    {
+        if (empty($reply_to) || ! filter_var($reply_to, FILTER_VALIDATE_EMAIL))
+            throw new Exception('Invalid reply to address: ' . $reply_to);
+
+        $this->reply_to[] = [
+            'email' => $reply_to,
+            'name' => $name,
+        ];
+
+        return $this;
+    }
 
     /**
      * @param $subject
@@ -280,9 +280,9 @@ class Email
         $this->model->uuid = $this->uuid;
         $this->model->from = json_encode($this->from);
         $this->model->to = json_encode($this->to);
-        $this->model->reply_to = json_encode($this->reply_to);
         $this->model->cc = count($this->cc) ? json_encode($this->cc) : null;
         $this->model->bcc = count($this->bcc) ? json_encode($this->bcc) : null;
+        $this->model->reply_to = count($this->reply_to) ? json_encode($this->reply_to) : null;
         $this->model->subject = $this->subject;
         $this->model->body = $this->body;
         $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
