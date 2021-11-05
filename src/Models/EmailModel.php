@@ -69,4 +69,18 @@ class EmailModel extends Model
 
         $this->dispatchJob($delay);
     }
+
+    /**
+     * Force re-send an email
+     */
+    public function resend()
+    {
+        $this->status = 'pending';
+        $this->retries = 0;
+        $this->remote_identifier = null;
+        $this->notes = null;
+        $this->save();
+
+        $this->dispatchJob();
+    }
 }
