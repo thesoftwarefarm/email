@@ -60,6 +60,10 @@ class Email
      * @var \TsfCorp\Email\Models\EmailModel|null
      */
     private $model;
+    /**
+     * @var string
+     */
+    private $database_connection = null;
 
     public function __construct()
     {
@@ -81,6 +85,17 @@ class Email
         }
 
         $this->provider = $provider;
+
+        return $this;
+    }
+
+    /**
+     * @param $name
+     * @return \TsfCorp\Email\Email
+     */
+    public function setDatabaseConnection($name)
+    {
+        $this->database_connection = $name;
 
         return $this;
     }
@@ -276,6 +291,8 @@ class Email
         }
 
         $this->model = new EmailModel;
+        $this->model->setConnection($this->database_connection);
+
         $this->model->project = $this->project;
         $this->model->uuid = $this->uuid;
         $this->model->from = json_encode($this->from);

@@ -58,18 +58,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Database Connection
-    |--------------------------------------------------------------------------
-    |
-    | This value is used to determine which database connection to use. Use a
-    | valid connection which is defined in config/database.php
-    |
-    */
-
-    'database_connection' => 'mysql',
-
-    /*
-    |--------------------------------------------------------------------------
     | Global "From" Address
     |--------------------------------------------------------------------------
     |

@@ -11,14 +11,6 @@ class EmailModel extends Model
     protected $table = 'emails';
 
     /**
-     * @return \Illuminate\Database\Connection
-     */
-    public function getConnection()
-    {
-        return parent::resolveConnection(config('email.database_connection'));
-    }
-
-    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function bounces()
