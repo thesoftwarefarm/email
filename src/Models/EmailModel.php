@@ -39,7 +39,7 @@ class EmailModel extends Model
         $this->status = 'queued';
         $this->save();
 
-        $job = new EmailJob($this->id);
+        $job = new EmailJob($this->id, $this->getConnectionName());
 
         if ($delay)
         {

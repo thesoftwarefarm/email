@@ -30,10 +30,10 @@ class EmailJob implements ShouldQueue
     /**
      * @param $id
      */
-    public function __construct($id)
+    public function __construct($id, $database_connection = null)
     {
         $this->id = $id;
-        $this->email = EmailModel::find($this->id);
+        $this->email = EmailModel::on($database_connection)->find($this->id);
     }
 
     /**
