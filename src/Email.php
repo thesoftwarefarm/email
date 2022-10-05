@@ -74,7 +74,7 @@ class Email
 
     /**
      * @param $provider
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function via($provider)
@@ -91,7 +91,7 @@ class Email
 
     /**
      * @param $name
-     * @return \TsfCorp\Email\Email
+     * @return static
      */
     public function setDatabaseConnection($name)
     {
@@ -103,7 +103,7 @@ class Email
     /**
      * @param $from
      * @param null $name
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function from($from, $name = null)
@@ -122,7 +122,7 @@ class Email
     /**
      * @param $to
      * @param null $name
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function to($to, $name = null)
@@ -141,7 +141,7 @@ class Email
     /**
      * @param $cc
      * @param null $name
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function cc($cc, $name = null)
@@ -160,7 +160,7 @@ class Email
     /**
      * @param $bcc
      * @param null $name
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function bcc($bcc, $name = null)
@@ -179,7 +179,7 @@ class Email
     /**
      * @param $reply_to
      * @param null $name
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function replyTo($reply_to, $name = null)
@@ -197,7 +197,7 @@ class Email
 
     /**
      * @param $subject
-     * @return \TsfCorp\Email\Email
+     * @return static
      */
     public function subject($subject)
 	{
@@ -208,7 +208,7 @@ class Email
 
     /**
      * @param $body
-     * @return \TsfCorp\Email\Email
+     * @return static
      */
     public function body($body)
     {
@@ -220,7 +220,7 @@ class Email
     /**
      * @param $file_path
      * @param string $disk
-     * @return \TsfCorp\Email\Email
+     * @return static
      */
     public function addAttachment($file_path, $disk = 'local')
     {
@@ -275,7 +275,7 @@ class Email
     /**
      * Saves new email in database
      *
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function enqueue()
@@ -328,7 +328,7 @@ class Email
     }
 
     /**
-     * @return \TsfCorp\Email\Email
+     * @return static
      * @throws \Exception
      */
     public function send()
