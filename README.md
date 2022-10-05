@@ -6,11 +6,12 @@ This package was designed to work in a standalone project or in a cluster of pro
 
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master project. This can be kept alive with `supervisor`
 
+# Upgrade from 5.x to 6.x
+* This package now works only on laravel 9.x and php 8. For laravel 8.x and lower use previous versions.
+
 # Upgrade from 4.x to 5.x
 * dropped database_connection from config. Use `setConnection()` when creating a new email to save the email on a different database connection
 * EmailModel should no longer be used in userland. Create your own model which extends EmailModel
-
-
 
 # Upgrade from 3.x to 4.x
 * add a new TEXT "reply_to" nullable column in emails table

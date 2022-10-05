@@ -2,6 +2,7 @@
 
 namespace TsfCorp\Email\Tests;
 
+use Illuminate\Support\Facades\Bus;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Jobs\EmailJob;
 
@@ -99,11 +100,12 @@ class EmailCreationTest extends TestCase
 
     public function test_enqueue_method_inserts_the_record_and_job_not_dispatched()
     {
-        $this->doesntExpectJobs(EmailJob::class);
+        Bus::fake();
 
         $email = (new Email)->to('to@mail.com')->enqueue();
 
         $this->assertEquals('pending', $email->getModel()->status);
+        Bus::assertNotDispatched(EmailJob::class);
     }
 
     public function test_dispatch_method_throws_exception_if_model_not_set()
@@ -115,10 +117,11 @@ class EmailCreationTest extends TestCase
 
     public function test_message_is_added_in_database_and_job_dispatched()
     {
-        $this->expectsJobs(EmailJob::class);
+        Bus::fake();
 
         $email = (new Email)->to('to@mail.com')->enqueue()->dispatch();
 
         $this->assertEquals('queued', $email->getModel()->status);
+        Bus::assertDispatched(EmailJob::class);
     }
 }

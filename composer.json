@@ -9,18 +9,18 @@
         }
     ],
     "require": {
-        "php": ">=7.2.5",
+        "php": "^8.0.2",
         "ext-json": "*",
-        "laravel/framework": "~5.1|~6.0|~7.0|^8.0|^9.0",
+        "laravel/framework": "^9.0",
         "aws/aws-php-sns-message-validator": "^1.5",
-        "symfony/mailgun-mailer": "^5.1",
-        "symfony/http-client": "^5.1",
-        "symfony/google-mailer": "^5.1",
+        "symfony/mailgun-mailer": "^6.0",
+        "symfony/http-client": "^6.0",
+        "symfony/google-mailer": "^6.0",
         "async-aws/ses": "^1.3",
-        "symfony/amazon-mailer": "^5.1"
+        "symfony/amazon-mailer": "^6.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.0",
+        "orchestra/testbench": "^7.0",
         "mockery/mockery": "^1.2"
     },
     "autoload": {

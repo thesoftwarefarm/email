@@ -2,6 +2,8 @@
 
 namespace TsfCorp\Email\Tests;
 
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Mockery;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Events\EmailFailed;
@@ -20,15 +22,17 @@ class EmailSendingTest extends TestCase
 
     public function test_email_is_marked_as_failed_if_provider_can_not_be_resolved()
     {
+        Event::fake();
+
         $email = (new Email())->to('to@mail.com')->enqueue();
 
         // overwrite provider to an invalid one
         $email->getModel()->provider = 'invalid_provider';
         $email->getModel()->save();
 
-        $this->expectsEvents(EmailFailed::class);
-
         (new EmailJob($email->getModel()->id))->handle();
+
+        Event::assertDispatched(EmailFailed::class);
 
         $model = $email->getModel()->fresh();
 
@@ -38,6 +42,8 @@ class EmailSendingTest extends TestCase
 
     public function test_email_is_marked_as_failed_if_reached_max_number_of_retries()
     {
+        Event::fake();
+
         $this->app['config']->set('email.max_retries', 5);
 
         $email = (new Email())->to('to@mail.com')->enqueue();
@@ -50,17 +56,19 @@ class EmailSendingTest extends TestCase
 
         $transport = Mockery::mock(Transport::class);
 
-        $this->expectsEvents(EmailFailed::class);
-
         $job->sendVia($transport);
 
         $email = $email->getModel()->fresh();
         $this->assertEquals('failed', $email->status);
         $this->assertEquals('Max retry limit reached. ', $email->notes);
+        Event::assertDispatched(EmailFailed::class);
     }
 
     public function test_email_is_retried_if_sending_to_provider_failed()
     {
+        Bus::fake();
+        Event::fake();
+
         $email = (new Email())->to('to@mail.com')->enqueue();
 
         $job = new EmailJob($email->getModel()->id);
@@ -68,19 +76,21 @@ class EmailSendingTest extends TestCase
         $transport = Mockery::mock(Transport::class);
         $transport->shouldReceive('send')->andThrow(\Exception::class, 'Some Exception');
 
-        $this->expectsJobs(EmailJob::class);
-        $this->expectsEvents(EmailFailed::class);
-
         $job->sendVia($transport);
+
+        Bus::assertDispatched(EmailJob::class);
 
         $email = $email->getModel()->fresh();
         $this->assertEquals('queued', $email->status);
         $this->assertEquals('1', $email->retries);
         $this->assertEquals('Some Exception', $email->notes);
+        Event::assertDispatched(EmailFailed::class);
     }
 
     public function test_email_is_successfully_sent_to_provider()
     {
+        Event::fake();
+
         $email = (new Email())->to('to@mail.com')->enqueue();
 
         $job = new EmailJob($email->getModel()->id);
@@ -90,17 +100,19 @@ class EmailSendingTest extends TestCase
         $transport->shouldReceive('getRemoteIdentifier')->andReturn('REMOTE_IDENTIFIER');
         $transport->shouldReceive('getMessage')->andReturn('Queued. Thank you!');
 
-        $this->expectsEvents(EmailSent::class);
         $job->sendVia($transport);
 
         $email = $email->getModel()->fresh();
         $this->assertEquals('sent', $email->status);
         $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
         $this->assertEquals('Queued. Thank you!', $email->notes);
+        Event::assertDispatched(EmailSent::class);
     }
 
     public function test_that_email_is_not_sent_in_non_production_environment()
     {
+        Event::fake();
+
         $this->app['config']->set('app.env', 'local');
 
         $email = (new Email())->to('to@mail.com')->enqueue();
@@ -109,13 +121,12 @@ class EmailSendingTest extends TestCase
 
         $transport = Mockery::mock(Transport::class);
 
-        $this->expectsEvents(EmailFailed::class);
-
         $job->sendVia($transport);
 
         $email = $email->getModel()->fresh();
         $this->assertEquals('failed', $email->status);
         $this->assertEquals('Sending email is disabled in non production environment.', $email->notes);
+        Event::assertDispatched(EmailFailed::class);
     }
 
 //    /**
