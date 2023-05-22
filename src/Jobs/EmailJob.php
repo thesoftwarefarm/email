@@ -70,7 +70,7 @@ class EmailJob implements ShouldQueue
      */
     public function sendVia(Transport $transport)
     {
-        if (config('app.env') != 'production')
+        if (config('app.env') != 'production' && !config('email.force_send_emails'))
         {
             $this->email->status = 'failed';
             $this->email->notes = 'Sending email is disabled in non production environment.';

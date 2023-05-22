@@ -44,6 +44,7 @@ return [
             'api_key' => env('MAILGUN_API_KEY'),
             'domain' => env('MAILGUN_DOMAIN'),
             'region' => env('MAILGUN_REGION'),
+            'webhook_secret' => env('MAILGUN_WEBHOOK_SECRET'),
         ],
         'ses' => [
             'key' => env('AWS_SES_KEY'),
@@ -82,4 +83,6 @@ return [
     */
 
     'max_retries' => 10,
+
+    'force_send_emails' => env('FORCE_SEND_EMAILS', false),
 ];
