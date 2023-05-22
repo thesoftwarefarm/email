@@ -11,7 +11,7 @@
     "require": {
         "php": "^8.0.2",
         "ext-json": "*",
-        "laravel/framework": "^9.0",
+        "laravel/framework": "^9.0|^10.0",
         "aws/aws-php-sns-message-validator": "^1.5",
         "symfony/mailgun-mailer": "^6.0",
         "symfony/http-client": "^6.0",
