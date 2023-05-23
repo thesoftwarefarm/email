@@ -25,7 +25,6 @@ class CreateEmailsTable extends Migration
             $table->integer('retries')->default(0)->index();
             $table->string('remote_identifier')->nullable()->index();
             $table->text('notes')->nullable();
-            $table->integer('bounces_count')->default(0)->index();
             $table->timestamps();
         });
     }
