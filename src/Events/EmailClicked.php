@@ -13,7 +13,7 @@ class EmailClicked
     private $eventPayload;
 
     /**
-     * EmailFailed constructor.
+     * EmailClicked constructor.
      * @param \TsfCorp\Email\Models\EmailModel $email
      */
     public function __construct(EmailModel $email, $eventPayload = null)

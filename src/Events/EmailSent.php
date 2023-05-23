@@ -12,7 +12,7 @@ class EmailSent
     private $email;
 
     /**
-     * EmailFailed constructor.
+     * EmailSent constructor.
      * @param \TsfCorp\Email\Models\EmailModel $email
      */
     public function __construct(EmailModel $email)
