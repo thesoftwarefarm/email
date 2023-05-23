@@ -26,8 +26,6 @@ class MailgunWebhookController
 
     public function webhook(Request $request)
     {
-        \Log::info($request->all());
-        return;
         if (!$this->checkSignature(
             $request->input('signature.timestamp'),
             $request->input('signature.token'),
@@ -124,9 +122,8 @@ class MailgunWebhookController
             if ($event['severity'] == 'permanent') {
                 $email->status = 'hard_bounced';
             }
-
             $email->save();
-        }
+        }        
 
         event(new EmailFailed($email, reason: $event['reason'], payload: $event));
 

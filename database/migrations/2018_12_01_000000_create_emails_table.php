@@ -21,7 +21,7 @@ class CreateEmailsTable extends Migration
             $table->string('subject')->nullable()->index();
             $table->longText('body')->nullable();
             $table->string('provider')->default('mailgun')->index();
-            $table->enum('status', ['pending', 'queued', 'sent', 'failed'])->default('pending')->index();
+            $table->string('status')->default('pending')->index();
             $table->integer('retries')->default(0)->index();
             $table->string('remote_identifier')->nullable()->index();
             $table->text('notes')->nullable();
