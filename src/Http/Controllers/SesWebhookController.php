@@ -6,8 +6,8 @@ use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use TsfCorp\Email\Models\EmailBounce;
 use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Events\EmailFailed;
 
 class SesWebhookController
 {
@@ -20,27 +20,23 @@ class SesWebhookController
     {
         $payload = json_decode($request->getContent(), true);
 
-        if(empty($payload))
-        {
+        if (empty($payload)) {
             return response()->json('No payload supplied.', 403);
         }
 
         $message = new Message($payload);
 
-        if(! $validator->isValid($message))
-        {
-             return response()->json('Invalid Signature.', 403);
+        if (!$validator->isValid($message)) {
+            return response()->json('Invalid Signature.', 403);
         }
 
-        $type = ! empty($payload['Type']) ? $payload['Type'] : null;
+        $type = !empty($payload['Type']) ? $payload['Type'] : null;
 
-        if ($type == 'SubscriptionConfirmation')
-        {
+        if ($type == 'SubscriptionConfirmation') {
             return $this->parseSubscriptionConfirmation($payload);
         }
 
-        if ($type == 'Notification')
-        {
+        if ($type == 'Notification') {
             return $this->parseNotification($payload);
         }
 
@@ -66,28 +62,18 @@ class SesWebhookController
     {
         $message = json_decode($payload['Message']);
 
-		if ($message->notificationType == 'Bounce' && $message->bounce->bounceType == 'Permanent')
-        {
+        if ($message->notificationType == 'Bounce' && $message->bounce->bounceType == 'Permanent') {
             $email = EmailModel::getByRemoteIdentifier($message->mail->messageId);
 
-		    if ( ! $email)
-			    return response()->json('Record not found.', 404);
+            if (!$email)
+                return response()->json('Record not found.', 404);
 
-            $email->bounces_count += count($message->bounce->bouncedRecipients);
-		    $email->save();
+            $email->status = 'hard_bounced';
+            $email->save();
 
-		    foreach($message->bounce->bouncedRecipients as $recipient)
-            {
-                $bounce = new EmailBounce();
-                $bounce->email_id = $email->id;
-                $bounce->recipient = $recipient->emailAddress;
-                $bounce->code = $recipient->status;
-                $bounce->reason = $recipient->action;
-                $bounce->description = $recipient->diagnosticCode;
-                $bounce->save();
-            }
+            event(new EmailFailed($email, payload: $message));
         }
 
-		return response()->json('Thank you.', 200);
+        return response()->json('Thank you.', 200);
     }
 }

@@ -12,7 +12,7 @@ class EmailFailed
      */
     private $email;
     private $exception;
-    private $eventPayload;
+    private $payload;
     private $reason;
 
     /**
@@ -20,11 +20,11 @@ class EmailFailed
      * @param \TsfCorp\Email\Models\EmailModel $email
      * @param \Throwable|null $exception
      */
-    public function __construct(EmailModel $email, Throwable $exception = null, $reason = null, $eventPayload = null)
+    public function __construct(EmailModel $email, Throwable $exception = null, $reason = null, $payload = null)
     {
         $this->email = $email;
         $this->exception = $exception;
-        $this->eventPayload = $eventPayload;
+        $this->payload = $payload;
         $this->reason = $reason;
     }
 
@@ -49,8 +49,8 @@ class EmailFailed
         return $this->reason;
     }
 
-    public function getEventPayload()
+    public function getPayload()
     {
-        return $this->eventPayload;
+        return $this->payload;
     }
 }

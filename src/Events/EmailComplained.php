@@ -10,16 +10,16 @@ class EmailComplained
      * @var \TsfCorp\Email\Models\EmailModel
      */
     private $email;
-    private $eventPayload;
+    private $payload;
 
     /**
      * EmailComplained constructor.
      * @param \TsfCorp\Email\Models\EmailModel $email
      */
-    public function __construct(EmailModel $email, $eventPayload = null)
+    public function __construct(EmailModel $email, $payload = null)
     {
         $this->email = $email;
-        $this->eventPayload = $eventPayload;
+        $this->payload = $payload;
     }
 
     /**
@@ -30,8 +30,8 @@ class EmailComplained
         return $this->email;
     }
 
-    public function getEventPayload()
+    public function getPayload()
     {
-        return $this->eventPayload;
+        return $this->payload;
     }
 }

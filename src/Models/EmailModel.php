@@ -11,14 +11,6 @@ class EmailModel extends Model
     protected $table = 'emails';
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function bounces()
-    {
-        return $this->hasMany(EmailBounce::class, 'email_id');
-    }
-
-    /**
      * @param $identifier
      * @return \TsfCorp\Email\Models\EmailModel|null
      */
