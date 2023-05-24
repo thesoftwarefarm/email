@@ -13,7 +13,7 @@ use TsfCorp\Email\Events\EmailUnsubscribed;
 
 class MailgunWebhookController
 {
-    public function webhook(Request $request)
+    public function index(Request $request)
     {
         if (!$this->checkSignature(
             $request->input('signature.timestamp'),
@@ -35,11 +35,6 @@ class MailgunWebhookController
         $email = $this->getEmailFromEvent($event);
         if (!$email) {
             return false;
-        }
-
-        if (isset($event['delivery-status']['description']) && $event['delivery-status']['description'] != '' && $event['delivery-status']['description'] != null) {
-            $email->notes = $event['delivery-status']['description'];
-            $email->save();
         }
 
         return match($event['event']){
