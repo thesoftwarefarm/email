@@ -9,8 +9,8 @@ class EmailComplained
     /**
      * @var \TsfCorp\Email\Models\EmailModel
      */
-    private $email;
-    private $payload;
+    public $email;
+    public $payload;
 
     /**
      * EmailComplained constructor.
@@ -20,18 +20,5 @@ class EmailComplained
     {
         $this->email = $email;
         $this->payload = $payload;
-    }
-
-    /**
-     * @return \TsfCorp\Email\Models\EmailModel
-     */
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    public function getPayload()
-    {
-        return $this->payload;
     }
 }

@@ -9,7 +9,7 @@ class EmailSent
     /**
      * @var \TsfCorp\Email\Models\EmailModel
      */
-    private $email;
+    public $email;
 
     /**
      * EmailSent constructor.
@@ -18,13 +18,5 @@ class EmailSent
     public function __construct(EmailModel $email)
     {
         $this->email = $email;
-    }
-
-    /**
-     * @return \TsfCorp\Email\Models\EmailModel
-     */
-    public function getEmail()
-    {
-        return $this->email;
     }
 }

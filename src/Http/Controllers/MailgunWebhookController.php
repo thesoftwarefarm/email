@@ -13,17 +13,6 @@ use TsfCorp\Email\Events\EmailUnsubscribed;
 
 class MailgunWebhookController
 {
-    //Map Mailgun events to methods
-    //Eg. 'delivered' => 'processDeliveredEvent' means that when Mailgun sends a 'delivered' event, the method 'processDeliveredEvent' will be called
-    const EVENTS = [
-        'delivered' => 'processDeliveredEvent',
-        'failed' => 'processFailedEvent',
-        'opened' => 'processOpenedEvent',
-        'clicked' => 'processClickedEvent',
-        'unsubscribed' => 'processUnsubscribedEvent',
-        'complained' => 'processComplainedEvent',
-    ];
-
     public function webhook(Request $request)
     {
         if (!$this->checkSignature(
@@ -32,10 +21,6 @@ class MailgunWebhookController
             $request->input('signature.signature')
         )) {
             return response()->json(['message' => 'Invalid signature'], 403);
-        }
-
-        if (!array_key_exists($request->input('event-data.event'), self::EVENTS)) {
-            return response()->json(['message' => 'Invalid event'], 400);
         }
 
         if (!$this->processEvent($request->input('event-data'))) {
@@ -52,26 +37,24 @@ class MailgunWebhookController
             return false;
         }
 
-        if (isset($event['reason'])) {
-            $email->notes = $event['reason'];
-            $email->save();
-        }
-
         if (isset($event['delivery-status']['description']) && $event['delivery-status']['description'] != '' && $event['delivery-status']['description'] != null) {
             $email->notes = $event['delivery-status']['description'];
             $email->save();
         }
 
-        return $this->{self::EVENTS[$event['event']]}($event, $email);
+        return match($event['event']){
+            'delivered' => $this->processDeliveredEvent($event, $email),
+            'failed' => $this->processFailedEvent($event, $email),
+            'opened' => $this->processOpenedEvent($event, $email),
+            'clicked' => $this->processClickedEvent($event, $email),
+            'unsubscribed' => $this->processUnsubscribedEvent($event, $email),
+            'complained' => $this->processComplainedEvent($event, $email),
+            default => null
+        };
     }
 
     private function processComplainedEvent($event, EmailModel $email)
     {
-        if ($email->status == 'sent' || $email->status == 'soft_bounced') {
-            $email->status = 'complained';
-            $email->save();
-        }
-
         event(new EmailComplained($email, payload: $event));
 
         return true;
@@ -101,8 +84,8 @@ class MailgunWebhookController
 
     private function processDeliveredEvent($event, EmailModel $email)
     {
-        if ($email->status == 'sent' || $email->status == 'soft_bounced') {
-            $email->status = 'delivered';
+        if ($email->status == EmailModel::STATUS_SENT || $email->status == EmailModel::STATUS_FAILED) {
+            $email->status = EmailModel::STATUS_DELIVERED;
             $email->save();
         }
 
@@ -113,17 +96,15 @@ class MailgunWebhookController
 
     private function processFailedEvent($event, EmailModel $email)
     {
-        if ($email->status == 'sent' || $email->status == 'soft_bounced' || $email->status == 'failed') {
-            $email->status == 'failed';
-            if ($event['severity'] == 'temporary') {
-                $email->status = 'soft_bounced';
+        if ($email->status == EmailModel::STATUS_SENT || $email->status == EmailModel::STATUS_FAILED) {
+            $email->status == EmailModel::STATUS_FAILED;
+
+            if (isset($event['reason'])) {
+                $email->notes = $event['reason'];
             }
 
-            if ($event['severity'] == 'permanent') {
-                $email->status = 'hard_bounced';
-            }
             $email->save();
-        }        
+        }
 
         event(new EmailFailed($email, reason: $event['reason'], payload: $event));
 

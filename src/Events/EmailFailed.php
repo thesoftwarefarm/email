@@ -10,10 +10,10 @@ class EmailFailed
     /**
      * @var \TsfCorp\Email\Models\EmailModel
      */
-    private $email;
-    private $exception;
-    private $payload;
-    private $reason;
+    public $email;
+    public $exception;
+    public $payload;
+    public $reason;
 
     /**
      * EmailFailed constructor.
@@ -26,31 +26,5 @@ class EmailFailed
         $this->exception = $exception;
         $this->payload = $payload;
         $this->reason = $reason;
-    }
-
-    /**
-     * @return \TsfCorp\Email\Models\EmailModel
-     */
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    /**
-     * @return \Throwable|null
-     */
-    public function getException()
-    {
-        return $this->exception;
-    }
-
-    public function getReason()
-    {
-        return $this->reason;
-    }
-
-    public function getPayload()
-    {
-        return $this->payload;
     }
 }

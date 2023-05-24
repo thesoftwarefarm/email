@@ -305,7 +305,7 @@ class Email
         $this->model->body = $this->body;
         $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
         $this->model->provider = $this->provider;
-        $this->model->status = 'pending';
+        $this->model->status = EmailModel::STATUS_PENDING;
         $this->model->save();
 
         return $this;

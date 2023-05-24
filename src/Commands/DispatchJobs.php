@@ -69,7 +69,7 @@ class DispatchJobs extends Command
      */
     private function fetchPendingMessages()
     {
-        return EmailModel::where('status', 'pending')
+        return EmailModel::where('status', EmailModel::STATUS_PENDING)
             ->orderBy('id', 'asc')
             ->take(20)
             ->get();

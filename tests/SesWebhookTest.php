@@ -5,6 +5,8 @@ namespace TsfCorp\Email\Tests;
 use Aws\Sns\MessageValidator;
 use Mockery;
 use TsfCorp\Email\Email;
+use Illuminate\Support\Facades\Event;
+use TsfCorp\Email\Events\EmailFailed;
 
 class SesWebhookTest extends TestCase
 {
@@ -110,5 +112,52 @@ class SesWebhookTest extends TestCase
 
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertEquals('Record not found.', $response->json());
+    }
+    public function test_bounce_from_ses()
+    {
+        Event::fake();
+        $email = (new Email())->to('to@mail.com')->enqueue();
+
+        $model = $email->getModel();
+        $model->remote_identifier = 'EMAIL_IDENTIFIER';
+        $model->save();
+
+        $this->instance(MessageValidator::class, Mockery::mock(MessageValidator::class, function ($mock) {
+            $mock->shouldReceive('isValid')->once()->andReturn(true);
+        }));
+
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
+            'Type' => 'Notification',
+            'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
+            'TopicArn' => '1',
+            'Message' => json_encode([
+                'notificationType' => 'Bounce',
+                'bounce' => [
+                    'bounceType' => 'Permanent',
+                    'bouncedRecipients' => [
+                        [
+                            'emailAddress' => 'to@mail.com',
+                            'action' => 'failed',
+                            'status' => '5.1.1',
+                            'diagnosticCode' => 'Diagnostic code',
+                        ],
+                    ]
+                ],
+                'mail' => [
+                    'messageId' => 'EMAIL_IDENTIFIER'
+                ]
+            ]),
+            'Timestamp' => '2019-08-19T06:45:00.710Z',
+            'SignatureVersion' => '1',
+            'Signature' => '1',
+            'SigningCertURL' => 'url',
+        ]));
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('Thank you.', $response->json());
+
+        $model = $model->fresh();
+        
+        Event::assertDispatched(EmailFailed::class);
     }
 }

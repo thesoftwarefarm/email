@@ -83,6 +83,4 @@ return [
     */
 
     'max_retries' => 10,
-
-    'force_send_emails' => env('FORCE_SEND_EMAILS', false),
 ];

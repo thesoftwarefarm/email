@@ -68,7 +68,7 @@ class SesWebhookController
             if (!$email)
                 return response()->json('Record not found.', 404);
 
-            $email->status = 'hard_bounced';
+            $email->status = EmailModel::STATUS_FAILED;
             $email->save();
 
             event(new EmailFailed($email, payload: $message));

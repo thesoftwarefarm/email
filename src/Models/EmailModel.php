@@ -10,6 +10,12 @@ class EmailModel extends Model
 {
     protected $table = 'emails';
 
+    const STATUS_PENDING = 'pending';
+    const STATUS_QUEUED = 'queued';
+    const STATUS_SENT = 'sent';
+    const STATUS_FAILED = 'failed';
+    const STATUS_DELIVERED = 'failed';
+
     /**
      * @param $identifier
      * @return \TsfCorp\Email\Models\EmailModel|null
@@ -59,7 +65,7 @@ class EmailModel extends Model
      */
     public function resend()
     {
-        $this->status = 'pending';
+        $this->status = self::STATUS_PENDING;
         $this->retries = 0;
         $this->remote_identifier = null;
         $this->notes = null;
