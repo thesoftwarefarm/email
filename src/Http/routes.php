@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['namespace' => 'TsfCorp\Email\Http\Controllers'], function(){
-    Route::post('/webhooks/mailgun', 'MailgunWebhookController@webhook');
+    Route::post('/webhooks/mailgun', 'MailgunWebhookController@index');
     Route::post('/webhook-ses', 'SesWebhookController@index');
 });
 
