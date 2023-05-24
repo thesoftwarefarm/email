@@ -14,7 +14,7 @@ class EmailModel extends Model
     const STATUS_QUEUED = 'queued';
     const STATUS_SENT = 'sent';
     const STATUS_FAILED = 'failed';
-    const STATUS_DELIVERED = 'failed';
+    const STATUS_DELIVERED = 'delivered';
 
     /**
      * @param $identifier
