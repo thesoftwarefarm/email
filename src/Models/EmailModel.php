@@ -14,7 +14,47 @@ class EmailModel extends Model
     const STATUS_QUEUED = 'queued';
     const STATUS_SENT = 'sent';
     const STATUS_FAILED = 'failed';
-    const STATUS_DELIVERED = 'delivered';
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function recipients()
+    {
+        return $this->hasMany(EmailRecipient::class, 'email_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function to()
+    {
+        return $this->recipients()->where('type', EmailRecipient::TYPE_TO);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function cc()
+    {
+        return $this->recipients()->where('type', EmailRecipient::TYPE_CC);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function bcc()
+    {
+        return $this->recipients()->where('type', EmailRecipient::TYPE_BCC);
+    }
+
+    /**
+     * @param $email
+     * @return \TsfCorp\Email\Models\EmailRecipient|null
+     */
+    public function getRecipientByEmail($email)
+    {
+        return $this->recipients()->where('email', $email)->first();
+    }
 
     /**
      * @param $identifier
@@ -22,9 +62,6 @@ class EmailModel extends Model
      */
     public static function getByRemoteIdentifier($identifier)
     {
-        if ( empty($identifier))
-            return null;
-
         return self::where('remote_identifier', $identifier)->first();
     }
 
@@ -34,7 +71,7 @@ class EmailModel extends Model
      */
     public function dispatchJob(Carbon $delay = null)
     {
-        $this->status = 'queued';
+        $this->status = EmailModel::STATUS_QUEUED;
         $this->save();
 
         $job = new EmailJob($this->id, $this->getConnectionName());

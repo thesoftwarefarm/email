@@ -5,6 +5,7 @@ namespace TsfCorp\Email\Tests;
 use Illuminate\Support\Facades\Bus;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Jobs\EmailJob;
+use TsfCorp\Email\Models\EmailModel;
 
 class EmailCreationTest extends TestCase
 {
@@ -60,9 +61,6 @@ class EmailCreationTest extends TestCase
         $model = $email->getModel()->fresh();
 
         $from = json_decode($model->from);
-        $to = json_decode($model->to);
-        $cc = json_decode($model->cc);
-        $bcc = json_decode($model->bcc);
         $reply_to = json_decode($model->reply_to);
         $attachments = json_decode($model->attachments);
 
@@ -71,17 +69,17 @@ class EmailCreationTest extends TestCase
         $this->assertEquals('sender@mail.com', $from->email);
         $this->assertEquals('Sender Name', $from->name);
 
-        $this->assertCount(1, $to);
-        $this->assertEquals('to@mail.com', $to[0]->email);
-        $this->assertEquals('To recipient', $to[0]->name);
+        $this->assertCount(1, $model->to);
+        $this->assertEquals('to@mail.com', $model->to->first()->email);
+        $this->assertEquals('To recipient', $model->to->first()->name);
 
-        $this->assertCount(1, $cc);
-        $this->assertEquals('cc@mail.com', $cc[0]->email);
-        $this->assertEquals('Cc recipient', $cc[0]->name);
+        $this->assertCount(1, $model->cc);
+        $this->assertEquals('cc@mail.com', $model->cc->first()->email);
+        $this->assertEquals('Cc recipient', $model->cc->first()->name);
 
-        $this->assertCount(1, $bcc);
-        $this->assertEquals('bcc@mail.com', $bcc[0]->email);
-        $this->assertEquals('Bcc recipient', $bcc[0]->name);
+        $this->assertCount(1, $model->bcc);
+        $this->assertEquals('bcc@mail.com', $model->bcc->first()->email);
+        $this->assertEquals('Bcc recipient', $model->bcc->first()->name);
 
         $this->assertCount(1, $reply_to);
         $this->assertEquals('reply_to@mail.com', $reply_to[0]->email);
@@ -95,7 +93,7 @@ class EmailCreationTest extends TestCase
         $this->assertEquals('local', $attachments[0]->disk);
         $this->assertEquals('attachment.txt', $attachments[0]->path);
 
-        $this->assertEquals('pending', $model->status);
+        $this->assertEquals(EmailModel::STATUS_PENDING, $model->status);
     }
 
     public function test_enqueue_method_inserts_the_record_and_job_not_dispatched()
@@ -104,7 +102,7 @@ class EmailCreationTest extends TestCase
 
         $email = (new Email)->to('to@mail.com')->enqueue();
 
-        $this->assertEquals('pending', $email->getModel()->status);
+        $this->assertEquals(EmailModel::STATUS_PENDING, $email->getModel()->status);
         Bus::assertNotDispatched(EmailJob::class);
     }
 
@@ -121,7 +119,7 @@ class EmailCreationTest extends TestCase
 
         $email = (new Email)->to('to@mail.com')->enqueue()->dispatch();
 
-        $this->assertEquals('queued', $email->getModel()->status);
+        $this->assertEquals(EmailModel::STATUS_QUEUED, $email->getModel()->status);
         Bus::assertDispatched(EmailJob::class);
     }
 }

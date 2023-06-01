@@ -7,6 +7,7 @@ use Mockery;
 use TsfCorp\Email\Email;
 use Illuminate\Support\Facades\Event;
 use TsfCorp\Email\Events\EmailFailed;
+use TsfCorp\Email\Models\EmailRecipient;
 
 class SesWebhookTest extends TestCase
 {
@@ -157,7 +158,10 @@ class SesWebhookTest extends TestCase
         $this->assertEquals('Thank you.', $response->json());
 
         $model = $model->fresh();
-        
+        $recipient = $model->getRecipientByEmail('to@mail.com');
+
+        $this->assertEquals(EmailRecipient::STATUS_FAILED, $recipient->status);
+        $this->assertEquals('Diagnostic code', $recipient->notes);
         Event::assertDispatched(EmailFailed::class);
     }
 }

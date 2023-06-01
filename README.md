@@ -6,6 +6,17 @@ This package was designed to work in a standalone project or in a cluster of pro
 
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master project. This can be kept alive with `supervisor`
 
+# Upgrade from 6.x to 7.x
+* `to` `cc`, `bcc` and `bounces_count` columns have been removed from the `emails` table. 
+* a new table was introduced, called `email_recipients`.
+* `email_bounces` table removed
+
+In order to migrate older emails to the new structure, you have to:
+1. publish the new migration file for `email_recipients` and run the migration
+2. build a script which loops through current emails and insert the recipients for to, cc and bcc and execute it
+3. create a migration which should drop to, cc, bcc and bounces_count columns
+4. create a a migration which removes the email_bounces table
+
 # Upgrade from 5.x to 6.x
 * This package now works only on laravel 9.x and php 8. For laravel 8.x and lower use previous versions.
 
@@ -92,4 +103,3 @@ Add `http://app.example/webhook-mailgun` link to "Permanent Failure" section wit
 2. Create a new subscription under the topic created above where you specify `http://app.example/webhook-ses` as endpoint
 3. After the subscription was created, AWS will make a post request to specified endpoint with an URL which should be used to confirm subscription. That url can be found in app logs. Copy and paste that in browser.
 4. Edit Amazon SES domain and add the topic created at step 1 under Notifications -> Bounce Notifications SNS Topic
-

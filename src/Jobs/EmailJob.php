@@ -9,8 +9,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Throwable;
-use TsfCorp\Email\Events\EmailFailed;
-use TsfCorp\Email\Events\EmailSent;
+use TsfCorp\Email\Events\EmailSendingFailed;
+use TsfCorp\Email\Events\EmailSendingSucceeded;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Transport;
 
@@ -23,12 +23,13 @@ class EmailJob implements ShouldQueue
      */
     private $id;
     /**
-     * @var \TsfCorp\Email\Models\EmailModel
+     * @var \TsfCorp\Email\Models\EmailModel|null
      */
     private $email;
 
     /**
      * @param $id
+     * @param null $database_connection
      */
     public function __construct($id, $database_connection = null)
     {
@@ -53,11 +54,11 @@ class EmailJob implements ShouldQueue
         }
         catch (Throwable $t)
         {
-            $this->email->status = 'failed';
+            $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = $t->getMessage();
             $this->email->save();
 
-            event(new EmailFailed($this->email));
+            event(new EmailSendingFailed($this->email, $t));
 
             return;
         }
@@ -72,22 +73,22 @@ class EmailJob implements ShouldQueue
     {
         if (config('app.env') != 'production')
         {
-            $this->email->status = 'failed';
+            $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = 'Sending email is disabled in non production environment.';
             $this->email->save();
 
-            event(new EmailFailed($this->email));
+            event(new EmailSendingFailed($this->email));
 
             return;
         }
 
         if($this->email->retries >= config('email.max_retries'))
         {
-            $this->email->status = 'failed';
+            $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = 'Max retry limit reached. '.$this->email->notes;
             $this->email->save();
 
-            event(new EmailFailed($this->email));
+            event(new EmailSendingFailed($this->email));
 
             return;
         }
@@ -96,20 +97,20 @@ class EmailJob implements ShouldQueue
         {
             $transport->send($this->email);
 
-            $this->email->status = 'sent';
+            $this->email->status = EmailModel::STATUS_SENT;
             $this->email->remote_identifier = $transport->getRemoteIdentifier();
             $this->email->notes = $transport->getMessage();
             $this->email->save();
 
-            event(new EmailSent($this->email));
+            event(new EmailSendingSucceeded($this->email));
         }
         catch (Throwable $t)
         {
-            $this->email->status = 'failed';
+            $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = $t->getMessage();
             $this->email->save();
 
-            event(new EmailFailed($this->email, $t));
+            event(new EmailSendingFailed($this->email, $t));
 
             $this->email->retry();
         }

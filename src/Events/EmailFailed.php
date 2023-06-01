@@ -2,8 +2,8 @@
 
 namespace TsfCorp\Email\Events;
 
-use Throwable;
 use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Models\EmailRecipient;
 
 class EmailFailed
 {
@@ -11,20 +11,24 @@ class EmailFailed
      * @var \TsfCorp\Email\Models\EmailModel
      */
     public $email;
-    public $exception;
+    /**
+     * @var \TsfCorp\Email\Models\EmailRecipient
+     */
+    public $recipient;
+    /**
+     * @var mixed
+     */
     public $payload;
-    public $reason;
 
     /**
-     * EmailFailed constructor.
      * @param \TsfCorp\Email\Models\EmailModel $email
-     * @param \Throwable|null $exception
+     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param null $payload
      */
-    public function __construct(EmailModel $email, Throwable $exception = null, $reason = null, $payload = null)
+    public function __construct(EmailModel $email, EmailRecipient $recipient, mixed $payload = null)
     {
         $this->email = $email;
-        $this->exception = $exception;
+        $this->recipient = $recipient;
         $this->payload = $payload;
-        $this->reason = $reason;
     }
 }

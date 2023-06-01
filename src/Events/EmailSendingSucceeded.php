@@ -4,7 +4,7 @@ namespace TsfCorp\Email\Events;
 
 use TsfCorp\Email\Models\EmailModel;
 
-class EmailSent
+class EmailSendingSucceeded
 {
     /**
      * @var \TsfCorp\Email\Models\EmailModel
