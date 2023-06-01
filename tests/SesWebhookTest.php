@@ -5,6 +5,9 @@ namespace TsfCorp\Email\Tests;
 use Aws\Sns\MessageValidator;
 use Mockery;
 use TsfCorp\Email\Email;
+use Illuminate\Support\Facades\Event;
+use TsfCorp\Email\Events\EmailFailed;
+use TsfCorp\Email\Models\EmailRecipient;
 
 class SesWebhookTest extends TestCase
 {
@@ -112,8 +115,9 @@ class SesWebhookTest extends TestCase
         $this->assertEquals('Record not found.', $response->json());
     }
 
-    public function test_bounce_is_saved_from_ses()
+    public function test_bounce_from_ses()
     {
+        Event::fake();
         $email = (new Email())->to('to@mail.com')->enqueue();
 
         $model = $email->getModel();
@@ -155,14 +159,10 @@ class SesWebhookTest extends TestCase
         $this->assertEquals('Thank you.', $response->json());
 
         $model = $model->fresh();
-        $bounce = $model->bounces->first();
+        $recipient = $model->getRecipientByEmail('to@mail.com');
 
-        $this->assertEquals('1', $model->bounces_count);
-
-        $this->assertEquals($model->id, $bounce->email_id);
-        $this->assertEquals('to@mail.com', $bounce->recipient);
-        $this->assertEquals('failed', $bounce->reason);
-        $this->assertEquals('5.1.1', $bounce->code);
-        $this->assertEquals('Diagnostic code', $bounce->description);
+        $this->assertEquals(EmailRecipient::STATUS_FAILED, $recipient->status);
+        $this->assertEquals('Diagnostic code', $recipient->notes);
+        Event::assertDispatched(EmailFailed::class);
     }
 }

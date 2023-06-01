@@ -5,7 +5,7 @@ namespace TsfCorp\Email\Events;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Models\EmailRecipient;
 
-class EmailFailed
+class EmailOpened
 {
     /**
      * @var \TsfCorp\Email\Models\EmailModel

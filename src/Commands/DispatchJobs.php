@@ -40,23 +40,19 @@ class DispatchJobs extends Command
     {
         $start_time = time();
 
-        while (true)
-        {
-            if(time() - $start_time > 86400)
-            {
+        while (true) {
+            if (time() - $start_time > 86400) {
                 exit();
             }
 
             $messages = $this->fetchPendingMessages();
 
-            if ( ! $messages->count())
-            {
+            if (!$messages->count()) {
                 usleep(333333);
             }
 
             /** @var \TsfCorp\Email\Models\EmailModel $message */
-            foreach($messages as $message)
-            {
+            foreach ($messages as $message) {
                 $this->info("Dispatching job for email id: {$message->id}");
 
                 $message->dispatchJob();
@@ -69,7 +65,7 @@ class DispatchJobs extends Command
      */
     private function fetchPendingMessages()
     {
-        return EmailModel::where('status', 'pending')
+        return EmailModel::where('status', EmailModel::STATUS_PENDING)
             ->orderBy('id', 'asc')
             ->take(20)
             ->get();

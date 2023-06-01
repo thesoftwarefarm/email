@@ -3,27 +3,25 @@
 namespace TsfCorp\Email\Tests;
 
 use TsfCorp\Email\Email;
+use Illuminate\Support\Facades\Event;
+use TsfCorp\Email\Events\EmailFailed;
+use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Models\EmailRecipient;
 
 class MailgunWebhookTest extends TestCase
 {
-    public function test_bounce_is_saved()
+    public function test_failed_event()
     {
-        $email = (new Email())->to('to@mail.com')->enqueue();
+        Event::fake();
 
-        $model = $email->getModel();
+        $model = (new Email())->to('to@mail.com')->enqueue()->getModel();
+
         $model->remote_identifier = '<EMAIL_IDENTIFIER>';
+        $model->status = EmailModel::STATUS_SENT;
         $model->save();
 
-        $time = time();
-        $token = 'TOKEN';
-        $signature = hash_hmac('SHA256', $time.$token, config('email.providers.mailgun.api_key'));
-
         $this->call('POST', '/webhook-mailgun', [
-            'signature' => [
-                'timestamp' => $time,
-                'token' => $token,
-                'signature' => $signature,
-            ],
+            'signature' => $this->createSignature(),
             'event-data' => [
                 'message' => [
                     'headers' => [
@@ -36,22 +34,33 @@ class MailgunWebhookTest extends TestCase
                 'reason' => 'suppress-bounce',
                 'delivery-status' => [
                     'code' => 605,
-                    'description' => 'Not delivering to previously bounced address',
-                    'message' => 'The email account that you tried to reach does not exist',
+                    'description' => 'description',
+                    'message' => 'message',
                 ],
             ],
         ]);
 
         $model = $model->fresh();
-        $bounce = $model->bounces->first();
+        $recipient = $model->getRecipientByEmail('to@mail.com');
 
-        $this->assertEquals('1', $model->bounces_count);
+        $this->assertEquals(EmailRecipient::STATUS_FAILED, $recipient->status);
+        $this->assertEquals('message', $recipient->notes);
+        Event::assertDispatched(EmailFailed::class);
+    }
 
-        $this->assertEquals($model->id, $bounce->email_id);
-        $this->assertEquals('to@mail.com', $bounce->recipient);
-        $this->assertEquals(605, $bounce->code);
-        $this->assertEquals('suppress-bounce', $bounce->reason);
-        $this->assertEquals('Not delivering to previously bounced address', $bounce->description);
-        $this->assertEquals('The email account that you tried to reach does not exist', $bounce->message);
+    /**
+     * @return array
+     */
+    private function createSignature()
+    {
+        $time = time();
+        $token = 'TOKEN';
+        $signature = hash_hmac('SHA256', $time . $token, config('email.providers.mailgun.webhook_secret'));
+
+        return [
+            'timestamp' => $time,
+            'token' => $token,
+            'signature' => $signature,
+        ];
     }
 }

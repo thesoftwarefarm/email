@@ -7,8 +7,11 @@ use Illuminate\Support\Facades\Event;
 use Mockery;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Events\EmailFailed;
+use TsfCorp\Email\Events\EmailSendingFailed;
+use TsfCorp\Email\Events\EmailSendingSucceeded;
 use TsfCorp\Email\Events\EmailSent;
 use TsfCorp\Email\Jobs\EmailJob;
+use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Transport;
 
 class EmailSendingTest extends TestCase
@@ -32,11 +35,11 @@ class EmailSendingTest extends TestCase
 
         (new EmailJob($email->getModel()->id))->handle();
 
-        Event::assertDispatched(EmailFailed::class);
+        Event::assertDispatched(EmailSendingFailed::class);
 
         $model = $email->getModel()->fresh();
 
-        $this->assertEquals('failed', $model->status);
+        $this->assertEquals(EmailModel::STATUS_FAILED, $model->status);
         $this->assertEquals('Invalid email provider', $model->notes);
     }
 
@@ -59,9 +62,9 @@ class EmailSendingTest extends TestCase
         $job->sendVia($transport);
 
         $email = $email->getModel()->fresh();
-        $this->assertEquals('failed', $email->status);
+        $this->assertEquals(EmailModel::STATUS_FAILED, $email->status);
         $this->assertEquals('Max retry limit reached. ', $email->notes);
-        Event::assertDispatched(EmailFailed::class);
+        Event::assertDispatched(EmailSendingFailed::class);
     }
 
     public function test_email_is_retried_if_sending_to_provider_failed()
@@ -81,10 +84,10 @@ class EmailSendingTest extends TestCase
         Bus::assertDispatched(EmailJob::class);
 
         $email = $email->getModel()->fresh();
-        $this->assertEquals('queued', $email->status);
+        $this->assertEquals(EmailModel::STATUS_QUEUED, $email->status);
         $this->assertEquals('1', $email->retries);
         $this->assertEquals('Some Exception', $email->notes);
-        Event::assertDispatched(EmailFailed::class);
+        Event::assertDispatched(EmailSendingFailed::class);
     }
 
     public function test_email_is_successfully_sent_to_provider()
@@ -103,10 +106,10 @@ class EmailSendingTest extends TestCase
         $job->sendVia($transport);
 
         $email = $email->getModel()->fresh();
-        $this->assertEquals('sent', $email->status);
+        $this->assertEquals(EmailModel::STATUS_SENT, $email->status);
         $this->assertEquals('REMOTE_IDENTIFIER', $email->remote_identifier);
         $this->assertEquals('Queued. Thank you!', $email->notes);
-        Event::assertDispatched(EmailSent::class);
+        Event::assertDispatched(EmailSendingSucceeded::class);
     }
 
     public function test_that_email_is_not_sent_in_non_production_environment()
@@ -124,9 +127,9 @@ class EmailSendingTest extends TestCase
         $job->sendVia($transport);
 
         $email = $email->getModel()->fresh();
-        $this->assertEquals('failed', $email->status);
+        $this->assertEquals(EmailModel::STATUS_FAILED, $email->status);
         $this->assertEquals('Sending email is disabled in non production environment.', $email->notes);
-        Event::assertDispatched(EmailFailed::class);
+        Event::assertDispatched(EmailSendingFailed::class);
     }
 
 //    /**

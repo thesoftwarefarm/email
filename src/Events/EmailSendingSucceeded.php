@@ -4,27 +4,19 @@ namespace TsfCorp\Email\Events;
 
 use TsfCorp\Email\Models\EmailModel;
 
-class EmailSent
+class EmailSendingSucceeded
 {
     /**
      * @var \TsfCorp\Email\Models\EmailModel
      */
-    private $email;
+    public $email;
 
     /**
-     * EmailFailed constructor.
+     * EmailSent constructor.
      * @param \TsfCorp\Email\Models\EmailModel $email
      */
     public function __construct(EmailModel $email)
     {
         $this->email = $email;
-    }
-
-    /**
-     * @return \TsfCorp\Email\Models\EmailModel
-     */
-    public function getEmail()
-    {
-        return $this->email;
     }
 }

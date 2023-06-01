@@ -12,6 +12,7 @@ use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use Throwable;
 use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Models\EmailRecipient;
 
 class Transport
 {
@@ -67,52 +68,36 @@ class Transport
      */
     public function send(EmailModel $email)
     {
-        try
-        {
+        try {
             $from = $this->fromJson($email->from);
 
-            $to = array_map(function ($recipient) {
-                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
-            }, $this->fromJson($email->to));
-
-            $cc = array_map(function ($recipient) {
-                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
-            }, $this->fromJson($email->cc));
-
-            $bcc = array_map(function ($recipient) {
-                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
-            }, $this->fromJson($email->bcc));
+            $to = $email->to->map(fn(EmailRecipient $r) => $r->asMimeAddress());
+            $cc = $email->cc->map(fn(EmailRecipient $r) => $r->asMimeAddress());
+            $bcc = $email->bcc->map(fn(EmailRecipient $r) => $r->asMimeAddress());
 
             $reply_to = array_map(function ($recipient) {
                 return new Address($recipient->email, $recipient->name ? $recipient->name : '');
             }, $this->fromJson($email->reply_to));
 
             $symfony_email = (new \Symfony\Component\Mime\Email())
-                ->from(new Address($from->email, $from->name ? $from->name : ''))
+                ->from(new Address($from->email, $from->name ?? ''))
                 ->to(...$to)
                 ->cc(...$cc)
                 ->bcc(...$bcc)
                 ->replyTo(...$reply_to)
-                ->subject($email->subject)
+                ->subject($email->subject ?? '')
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
 
-            try
-            {
-                foreach($this->fromJson($email->attachments) as $attachment)
-                {
-                    if($attachment->disk == 'local')
-                    {
+            try {
+                foreach ($this->fromJson($email->attachments) as $attachment) {
+                    if ($attachment->disk == 'local') {
                         $symfony_email->attachFromPath($attachment->path, basename($attachment->path));
-                    }
-                    else
-                    {
+                    } else {
                         $symfony_email->attach(Storage::disk($attachment->disk)->readStream($attachment->path), basename($attachment->path));
                     }
                 }
-            }
-            catch (Throwable $e)
-            {
+            } catch (Throwable $e) {
                 // do not rethrow the error in case a file can't be attached.
             }
 
@@ -120,9 +105,7 @@ class Transport
 
             $this->remote_identifier = $response->getMessageId();
             $this->message = 'Queued';
-        }
-        catch (Throwable $t)
-        {
+        } catch (Throwable $t) {
             throw $t;
         }
     }
@@ -136,13 +119,11 @@ class Transport
     {
         $provider = null;
 
-        if ($email->provider == 'mailgun')
-        {
+        if ($email->provider == 'mailgun') {
             $provider = new MailgunApiTransport(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.domain'), config('email.providers.mailgun.region'));
         }
 
-        if ($email->provider == 'ses')
-        {
+        if ($email->provider == 'ses') {
             $client = new SesClient([
                 'accessKeyId' => config('email.providers.ses.key'),
                 'accessKeySecret' => config('email.providers.ses.secret'),
@@ -152,13 +133,11 @@ class Transport
             $provider = new SesApiAsyncAwsTransport($client);
         }
 
-        if ($email->provider == 'google-smtp')
-        {
+        if ($email->provider == 'google-smtp') {
             $provider = new GmailSmtpTransport(config('email.providers.google-smtp.email'), config('email.providers.google-smtp.password'));
         }
 
-        if(!$provider)
-        {
+        if (!$provider) {
             throw new Exception('Invalid email provider');
         }
 
@@ -173,8 +152,7 @@ class Transport
     {
         $decoded = json_decode($json);
 
-        if(json_last_error() !== JSON_ERROR_NONE)
-        {
+        if (json_last_error() !== JSON_ERROR_NONE) {
             $decoded = [];
         }
 
