@@ -68,8 +68,7 @@ class Transport
      */
     public function send(EmailModel $email)
     {
-        try
-        {
+        try {
             $from = $this->fromJson($email->from);
 
             $to = $email->to->map(fn(EmailRecipient $r) => $r->asMimeAddress());
@@ -90,22 +89,15 @@ class Transport
                 ->text('To view the message, please use an HTML compatible email viewer')
                 ->html($email->body);
 
-            try
-            {
-                foreach($this->fromJson($email->attachments) as $attachment)
-                {
-                    if($attachment->disk == 'local')
-                    {
+            try {
+                foreach ($this->fromJson($email->attachments) as $attachment) {
+                    if ($attachment->disk == 'local') {
                         $symfony_email->attachFromPath($attachment->path, basename($attachment->path));
-                    }
-                    else
-                    {
+                    } else {
                         $symfony_email->attach(Storage::disk($attachment->disk)->readStream($attachment->path), basename($attachment->path));
                     }
                 }
-            }
-            catch (Throwable $e)
-            {
+            } catch (Throwable $e) {
                 // do not rethrow the error in case a file can't be attached.
             }
 
@@ -113,9 +105,7 @@ class Transport
 
             $this->remote_identifier = $response->getMessageId();
             $this->message = 'Queued';
-        }
-        catch (Throwable $t)
-        {
+        } catch (Throwable $t) {
             throw $t;
         }
     }
@@ -129,13 +119,11 @@ class Transport
     {
         $provider = null;
 
-        if ($email->provider == 'mailgun')
-        {
+        if ($email->provider == 'mailgun') {
             $provider = new MailgunApiTransport(config('email.providers.mailgun.api_key'), config('email.providers.mailgun.domain'), config('email.providers.mailgun.region'));
         }
 
-        if ($email->provider == 'ses')
-        {
+        if ($email->provider == 'ses') {
             $client = new SesClient([
                 'accessKeyId' => config('email.providers.ses.key'),
                 'accessKeySecret' => config('email.providers.ses.secret'),
@@ -145,13 +133,11 @@ class Transport
             $provider = new SesApiAsyncAwsTransport($client);
         }
 
-        if ($email->provider == 'google-smtp')
-        {
+        if ($email->provider == 'google-smtp') {
             $provider = new GmailSmtpTransport(config('email.providers.google-smtp.email'), config('email.providers.google-smtp.password'));
         }
 
-        if(!$provider)
-        {
+        if (!$provider) {
             throw new Exception('Invalid email provider');
         }
 
@@ -166,8 +152,7 @@ class Transport
     {
         $decoded = json_decode($json);
 
-        if(json_last_error() !== JSON_ERROR_NONE)
-        {
+        if (json_last_error() !== JSON_ERROR_NONE) {
             $decoded = [];
         }
 

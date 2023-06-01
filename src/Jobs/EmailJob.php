@@ -43,17 +43,13 @@ class EmailJob implements ShouldQueue
      */
     public function handle()
     {
-        if ( ! $this->email)
-        {
+        if (!$this->email) {
             throw new Exception('Record with id [' . $this->id . '] not found.');
         }
 
-        try
-        {
+        try {
             $transport = Transport::resolveFor($this->email);
-        }
-        catch (Throwable $t)
-        {
+        } catch (Throwable $t) {
             $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = $t->getMessage();
             $this->email->save();
@@ -71,8 +67,7 @@ class EmailJob implements ShouldQueue
      */
     public function sendVia(Transport $transport)
     {
-        if (config('app.env') != 'production')
-        {
+        if (config('app.env') != 'production') {
             $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = 'Sending email is disabled in non production environment.';
             $this->email->save();
@@ -82,10 +77,9 @@ class EmailJob implements ShouldQueue
             return;
         }
 
-        if($this->email->retries >= config('email.max_retries'))
-        {
+        if ($this->email->retries >= config('email.max_retries')) {
             $this->email->status = EmailModel::STATUS_FAILED;
-            $this->email->notes = 'Max retry limit reached. '.$this->email->notes;
+            $this->email->notes = 'Max retry limit reached. ' . $this->email->notes;
             $this->email->save();
 
             event(new EmailSendingFailed($this->email));
@@ -93,8 +87,7 @@ class EmailJob implements ShouldQueue
             return;
         }
 
-        try
-        {
+        try {
             $transport->send($this->email);
 
             $this->email->status = EmailModel::STATUS_SENT;
@@ -103,9 +96,7 @@ class EmailJob implements ShouldQueue
             $this->email->save();
 
             event(new EmailSendingSucceeded($this->email));
-        }
-        catch (Throwable $t)
-        {
+        } catch (Throwable $t) {
             $this->email->status = EmailModel::STATUS_FAILED;
             $this->email->notes = $t->getMessage();
             $this->email->save();

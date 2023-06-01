@@ -26,11 +26,11 @@ class MailgunWebhookController
             'signature.signature' => 'required',
             'signature.timestamp' => 'required',
             'signature.token' => 'required',
-		];
+        ];
 
-		$validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules);
 
-		if ($validator->fails()) {
+        if ($validator->fails()) {
             return response('Validation error', 422);
         }
 
@@ -40,8 +40,8 @@ class MailgunWebhookController
 
         $email = EmailModel::getByRemoteIdentifier("<{$request->input('event-data.message.headers.message-id')}>");
 
-		if (!$email) {
-			return response('Email not found.', 406);
+        if (!$email) {
+            return response('Email not found.', 406);
         }
 
         $event = $request->input('event-data');
@@ -49,7 +49,7 @@ class MailgunWebhookController
         $recipient = $email->getRecipientByEmail($event['recipient']);
 
         if (!$recipient) {
-			return response('Email recipient not found.', 406);
+            return response('Email recipient not found.', 406);
         }
 
         match ($event['event']) {
@@ -143,9 +143,9 @@ class MailgunWebhookController
      * @return bool
      */
     private function checkSignature(Request $request)
-	{
-		$signature = hash_hmac('SHA256', $request->input('signature.timestamp').$request->input('signature.token'), config('email.providers.mailgun.webhook_secret'));
+    {
+        $signature = hash_hmac('SHA256', $request->input('signature.timestamp') . $request->input('signature.token'), config('email.providers.mailgun.webhook_secret'));
 
-		return $signature === $request->input('signature.signature');
-	}
+        return $signature === $request->input('signature.signature');
+    }
 }

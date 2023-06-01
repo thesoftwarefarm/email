@@ -73,8 +73,7 @@ class Email
      */
     public function via($provider)
     {
-        if ( ! in_array($provider, $this->available_providers))
-        {
+        if (!in_array($provider, $this->available_providers)) {
             throw new Exception('Unrecognized email provider [' . $provider . ']');
         }
 
@@ -103,17 +102,17 @@ class Email
      */
     public function addRecipient($type, $email, $name = null)
     {
-        if(!$this->isValidEmailAddress($email)) {
+        if (!$this->isValidEmailAddress($email)) {
             throw new Exception("Invalid {$type} address: {$email}");
         }
 
-		$this->recipients[] = [
-		    'type' => $type,
-		    'email' => $email,
-		    'name' => $name,
+        $this->recipients[] = [
+            'type' => $type,
+            'email' => $email,
+            'name' => $name,
         ];
 
-		return $this;
+        return $this;
     }
 
     /**
@@ -123,18 +122,18 @@ class Email
      * @throws \Exception
      */
     public function from($from, $name = null)
-	{
-        if(!$this->isValidEmailAddress($from)) {
+    {
+        if (!$this->isValidEmailAddress($from)) {
             throw new Exception("Invalid from address: {$from}");
         }
 
-		$this->from = [
-		    'email' => $from,
-		    'name' => $name,
+        $this->from = [
+            'email' => $from,
+            'name' => $name,
         ];
 
-		return $this;
-	}
+        return $this;
+    }
 
     /**
      * @param $to
@@ -143,11 +142,11 @@ class Email
      * @throws \Exception
      */
     public function to($to, $name = null)
-	{
+    {
         $this->addRecipient(EmailRecipient::TYPE_TO, $to, $name);
 
         return $this;
-	}
+    }
 
     /**
      * @param $cc
@@ -156,11 +155,11 @@ class Email
      * @throws \Exception
      */
     public function cc($cc, $name = null)
-	{
-	    $this->addRecipient(EmailRecipient::TYPE_CC, $cc, $name);
+    {
+        $this->addRecipient(EmailRecipient::TYPE_CC, $cc, $name);
 
         return $this;
-	}
+    }
 
     /**
      * @param $bcc
@@ -169,11 +168,11 @@ class Email
      * @throws \Exception
      */
     public function bcc($bcc, $name = null)
-	{
+    {
         $this->addRecipient(EmailRecipient::TYPE_BCC, $bcc, $name);
 
-		return $this;
-	}
+        return $this;
+    }
 
     /**
      * @param $reply_to
@@ -183,7 +182,7 @@ class Email
      */
     public function replyTo($reply_to, $name = null)
     {
-        if(!$this->isValidEmailAddress($reply_to)) {
+        if (!$this->isValidEmailAddress($reply_to)) {
             throw new Exception("Invalid reply to address: {$reply_to}");
         }
 
@@ -200,11 +199,11 @@ class Email
      * @return static
      */
     public function subject($subject)
-	{
-		$this->subject = $subject;
+    {
+        $this->subject = $subject;
 
-		return $this;
-	}
+        return $this;
+    }
 
     /**
      * @param $body
@@ -272,15 +271,13 @@ class Email
      */
     public function enqueue()
     {
-        if ( ! count($this->from))
-        {
+        if (!count($this->from)) {
             $this->from(config('email.from.address'), config('email.from.name'));
         }
 
         $to = array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_TO);
 
-        if ( ! count($to))
-        {
+        if (!count($to)) {
             throw new Exception('Missing to address.');
         }
 
@@ -317,8 +314,7 @@ class Email
      */
     public function dispatch(Carbon $delay = null)
     {
-        if ( ! $this->model)
-        {
+        if (!$this->model) {
             throw new Exception('There is no email to be dispatched.');
         }
 

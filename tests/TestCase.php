@@ -15,8 +15,8 @@ class TestCase extends Orchestra
 
     protected function setUpDatabase()
     {
-        include_once __DIR__.'/../database/migrations/2018_12_01_000000_create_emails_table.php';
-        include_once __DIR__.'/../database/migrations/2023_06_01_000000_create_email_recipients_table.php';
+        include_once __DIR__ . '/../database/migrations/2018_12_01_000000_create_emails_table.php';
+        include_once __DIR__ . '/../database/migrations/2023_06_01_000000_create_email_recipients_table.php';
 
         (new \CreateEmailsTable())->up();
         (new \CreateEmailRecipientsTable())->up();
@@ -27,9 +27,9 @@ class TestCase extends Orchestra
         $app['config']->set('app.env', 'production');
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('database.connections.sqlite', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
 
         $app['config']->set('email.database_connection', 'sqlite');

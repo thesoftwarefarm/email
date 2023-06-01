@@ -114,6 +114,7 @@ class SesWebhookTest extends TestCase
         $this->assertEquals(404, $response->getStatusCode());
         $this->assertEquals('Record not found.', $response->json());
     }
+
     public function test_bounce_from_ses()
     {
         Event::fake();

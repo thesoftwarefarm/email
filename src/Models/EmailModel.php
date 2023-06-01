@@ -76,8 +76,7 @@ class EmailModel extends Model
 
         $job = new EmailJob($this->id, $this->getConnectionName());
 
-        if ($delay)
-        {
+        if ($delay) {
             $job->delay($delay);
         }
 

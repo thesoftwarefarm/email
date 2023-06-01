@@ -37,8 +37,7 @@ class InstallCommand extends Command
      */
     public function handle()
     {
-        if ( ! $this->confirm('This will install email config file and optionally migration file. Do you wish to continue?'))
-        {
+        if (!$this->confirm('This will install email config file and optionally migration file. Do you wish to continue?')) {
             $this->comment('Aborted.');
             return;
         }
@@ -46,8 +45,7 @@ class InstallCommand extends Command
         $this->comment('Publishing config file...');
         $this->callSilent('vendor:publish', ['--tag' => ['email-config']]);
 
-        if ($this->confirm('Do you wish to publish migration file?'))
-        {
+        if ($this->confirm('Do you wish to publish migration file?')) {
             $this->comment('Publishing migration file...');
             $this->callSilent('vendor:publish', ['--tag' => ['email-migrations']]);
         }

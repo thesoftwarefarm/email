@@ -21,27 +21,23 @@ class SesWebhookController
     {
         $payload = json_decode($request->getContent(), true);
 
-        if(empty($payload))
-        {
+        if (empty($payload)) {
             return response()->json('No payload supplied.', 403);
         }
 
         $message = new Message($payload);
 
-        if(! $validator->isValid($message))
-        {
-             return response()->json('Invalid Signature.', 403);
+        if (!$validator->isValid($message)) {
+            return response()->json('Invalid Signature.', 403);
         }
 
-        $type = ! empty($payload['Type']) ? $payload['Type'] : null;
+        $type = !empty($payload['Type']) ? $payload['Type'] : null;
 
-        if ($type == 'SubscriptionConfirmation')
-        {
+        if ($type == 'SubscriptionConfirmation') {
             return $this->parseSubscriptionConfirmation($payload);
         }
 
-        if ($type == 'Notification')
-        {
+        if ($type == 'Notification') {
             return $this->parseNotification($payload);
         }
 
@@ -67,18 +63,16 @@ class SesWebhookController
     {
         $message = json_decode($payload['Message']);
 
-		if ($message->notificationType == 'Bounce' && $message->bounce->bounceType == 'Permanent')
-        {
+        if ($message->notificationType == 'Bounce' && $message->bounce->bounceType == 'Permanent') {
             $email = EmailModel::getByRemoteIdentifier($message->mail->messageId);
 
-		    if ( ! $email)
-			    return response()->json('Record not found.', 404);
+            if (!$email)
+                return response()->json('Record not found.', 404);
 
-            foreach($message->bounce->bouncedRecipients as $bounced_recipient)
-            {
+            foreach ($message->bounce->bouncedRecipients as $bounced_recipient) {
                 $recipient = $email->getRecipientByEmail($bounced_recipient->emailAddress);
 
-                if(!$recipient) {
+                if (!$recipient) {
                     continue;
                 }
 
@@ -90,6 +84,6 @@ class SesWebhookController
             }
         }
 
-		return response()->json('Thank you.', 200);
+        return response()->json('Thank you.', 200);
     }
 }

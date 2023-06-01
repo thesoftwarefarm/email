@@ -14,6 +14,7 @@ class EmailServiceProvider extends ServiceProvider
      * @var bool
      */
     protected $defer = false;
+
     /**
      * Perform post-registration booting of services.
      *
@@ -21,13 +22,11 @@ class EmailServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (! $this->app->routesAreCached())
-        {
-            require __DIR__.'/Http/routes.php';
+        if (!$this->app->routesAreCached()) {
+            require __DIR__ . '/Http/routes.php';
         }
 
-        if($this->app->runningInConsole())
-        {
+        if ($this->app->runningInConsole()) {
             $this->publishes([
                 __DIR__ . '/../config/email.php' => config_path('email.php')
             ], 'email-config');
