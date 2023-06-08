@@ -13,6 +13,7 @@ project. This can be kept alive with `supervisor`
 * `to` `cc`, `bcc` and `bounces_count` columns have been removed from the `emails` table.
 * a new table was introduced, called `email_recipients`.
 * `email_bounces` table removed
+* new `webhook_secret` config value was added
 
 In order to migrate older emails to the new structure, you have to:
 
