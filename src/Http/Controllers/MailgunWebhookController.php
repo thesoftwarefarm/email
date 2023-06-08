@@ -91,7 +91,7 @@ class MailgunWebhookController
         $recipient->notes = $event['delivery-status']['message'];
         $recipient->save();
 
-        event(new EmailFailed($email, $recipient, $event));
+        event(new EmailFailed($email, $recipient, $recipient->notes, $event));
     }
 
     /**

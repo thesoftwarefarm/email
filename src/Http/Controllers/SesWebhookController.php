@@ -80,7 +80,7 @@ class SesWebhookController
                 $recipient->notes = $bounced_recipient->diagnosticCode;
                 $recipient->save();
 
-                event(new EmailFailed($email, $recipient, $payload));
+                event(new EmailFailed($email, $recipient, $recipient->notes, $payload));
             }
         }
 
