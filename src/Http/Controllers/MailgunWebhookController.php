@@ -87,8 +87,14 @@ class MailgunWebhookController
      */
     private function processFailedEvent(EmailModel $email, EmailRecipient $recipient, $event)
     {
+        $notes = match (true) {
+            isset($event['delivery-status']['message']) => $event['delivery-status']['message'],
+            isset($event['delivery-status']['description']) => $event['delivery-status']['description'],
+            default => null,
+        };
+
         $recipient->status = EmailRecipient::STATUS_FAILED;
-        $recipient->notes = $event['delivery-status']['message'];
+        $recipient->notes = $notes;
         $recipient->save();
 
         event(new EmailFailed($email, $recipient, $recipient->notes, $event));
