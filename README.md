@@ -8,6 +8,18 @@ project/database which act as a collector.
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master
 project. This can be kept alive with `supervisor`
 
+# Upgrade from 7.x to 8.x
+
+* `addAttachment` method signature was changed to `addAttachment(TsfCorp\Email\Attachment $attachment)`. This object can be constructed via
+```php
+use TsfCorp\Email\Attachment;
+
+$attachment = Attachment::path('/path/to/file.txt');
+$attachment = Attachment::path('/path/to/file.txt', 'custom_name.txt');
+$attachment = Attachment::disk('s3')->setPath('/path/to/file.txt');
+$attachment = Attachment::disk('s3')->setPath('/path/to/file.txt', 'custom_name.txt');
+```
+
 # Upgrade from 6.x to 7.x
 
 * `to` `cc`, `bcc` and `bounces_count` columns have been removed from the `emails` table.
@@ -77,13 +89,15 @@ This package makes use of Laravel Queues/Jobs to send emails. Make sure the queu
 
 ```php
 use TsfCorp\Email\Email;
+use TsfCorp\Email\Attachment;
 
 $email = (new Email())
     ->to('to@mail.com')
     ->cc('cc@mail.com')
     ->bcc('bcc@mail.com')
     ->subject('Hi')
-    ->body('Hi there!');
+    ->body('Hi there!')
+    ->addAttachment(Attachment::path('/path/to/file.txt'));
 ``` 
 
 Use `enqueue()` method to save the message in database without sending. Useful when you want to just save the message
