@@ -3,6 +3,7 @@
 namespace TsfCorp\Email\Tests;
 
 use Illuminate\Support\Facades\Bus;
+use TsfCorp\Email\Attachment;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Jobs\EmailJob;
 use TsfCorp\Email\Models\EmailModel;
@@ -54,7 +55,9 @@ class EmailCreationTest extends TestCase
             ->replyTo('reply_to@mail.com', 'Reply to name')
             ->subject('Subject')
             ->body('Body')
-            ->addAttachment('attachment.txt')
+            ->addAttachment(Attachment::path('attachment_1.txt'))
+            ->addAttachment(Attachment::path('attachment_2.txt', 'custom_name_2.txt'))
+            ->addAttachment(Attachment::disk('s3')->setPath('attachment_3.txt', 'custom_name_3.txt'))
             ->via('mailgun')
             ->enqueue();
 
@@ -89,9 +92,19 @@ class EmailCreationTest extends TestCase
         $this->assertEquals('Body', $model->body);
         $this->assertEquals('mailgun', $model->provider);
 
-        $this->assertCount(1, $attachments);
+        $this->assertCount(3, $attachments);
+
         $this->assertEquals('local', $attachments[0]->disk);
-        $this->assertEquals('attachment.txt', $attachments[0]->path);
+        $this->assertEquals('attachment_1.txt', $attachments[0]->path);
+        $this->assertEquals('attachment_1.txt', $attachments[0]->name);
+
+        $this->assertEquals('local', $attachments[1]->disk);
+        $this->assertEquals('attachment_2.txt', $attachments[1]->path);
+        $this->assertEquals('custom_name_2.txt', $attachments[1]->name);
+
+        $this->assertEquals('s3', $attachments[2]->disk);
+        $this->assertEquals('attachment_3.txt', $attachments[2]->path);
+        $this->assertEquals('custom_name_3.txt', $attachments[2]->name);
 
         $this->assertEquals(EmailModel::STATUS_PENDING, $model->status);
     }

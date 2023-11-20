@@ -5,11 +5,10 @@ namespace TsfCorp\Email\Tests;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Mockery;
+use TsfCorp\Email\Attachment;
 use TsfCorp\Email\Email;
-use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Events\EmailSendingFailed;
 use TsfCorp\Email\Events\EmailSendingSucceeded;
-use TsfCorp\Email\Events\EmailSent;
 use TsfCorp\Email\Jobs\EmailJob;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Transport;
@@ -165,7 +164,7 @@ class EmailSendingTest extends TestCase
 //            ->subject('My email')
 //            ->to('mail@mail.com')
 //            ->body('<h1>Body</h1>')
-//            ->addAttachment(__DIR__.'/../stubs/attachment.txt')
+//            ->addAttachment(Attachment::path(__DIR__.'/../stubs/attachment.txt'))
 //            ->via('mailgun')
 //            ->enqueue();
 //

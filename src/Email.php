@@ -217,16 +217,12 @@ class Email
     }
 
     /**
-     * @param $file_path
-     * @param string $disk
+     * @param \TsfCorp\Email\Attachment $attachment
      * @return static
      */
-    public function addAttachment($file_path, $disk = 'local')
+    public function addAttachment(Attachment $attachment)
     {
-        $this->attachments[] = [
-            'disk' => $disk,
-            'path' => $file_path,
-        ];
+        $this->attachments[] = $attachment;
 
         return $this;
     }

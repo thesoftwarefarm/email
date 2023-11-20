@@ -76,8 +76,15 @@ class Transport
             $bcc = $email->bcc->map(fn(EmailRecipient $r) => $r->asMimeAddress());
 
             $reply_to = array_map(function ($recipient) {
-                return new Address($recipient->email, $recipient->name ? $recipient->name : '');
+                return new Address($recipient->email, $recipient->name ?? '');
             }, $this->fromJson($email->reply_to));
+
+            $attachments = array_map(function ($attachment) {
+                return (new Attachment())
+                    ->setPath($attachment->path)
+                    ->setDisk($attachment->disk)
+                    ->setName($attachment->name ?? null);
+            }, $this->fromJson($email->attachments));
 
             $symfony_email = (new \Symfony\Component\Mime\Email())
                 ->from(new Address($from->email, $from->name ?? ''))
@@ -90,11 +97,11 @@ class Transport
                 ->html($email->body);
 
             try {
-                foreach ($this->fromJson($email->attachments) as $attachment) {
-                    if ($attachment->disk == 'local') {
-                        $symfony_email->attachFromPath($attachment->path, basename($attachment->path));
+                foreach ($attachments as $attachment) {
+                    if ($attachment->getDisk() == 'local') {
+                        $symfony_email->attachFromPath($attachment->getPath(), $attachment->getName());
                     } else {
-                        $symfony_email->attach(Storage::disk($attachment->disk)->readStream($attachment->path), basename($attachment->path));
+                        $symfony_email->attach(Storage::disk($attachment->getDisk())->readStream($attachment->getPath()), $attachment->getName());
                     }
                 }
             } catch (Throwable $e) {
