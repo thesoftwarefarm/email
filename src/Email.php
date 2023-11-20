@@ -232,6 +232,38 @@ class Email
     }
 
     /**
+     * @return array
+     */
+    public function getRecipients()
+    {
+        return $this->recipients;
+    }
+
+    /**
+     * @return array
+     */
+    public function getTo()
+    {
+        return array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_TO);
+    }
+
+    /**
+     * @return array
+     */
+    public function getCc()
+    {
+        return array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_CC);
+    }
+
+    /**
+     * @return array
+     */
+    public function getBcc()
+    {
+        return array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_BCC);
+    }
+
+    /**
      * @return \TsfCorp\Email\Models\EmailModel|null
      */
     public function getModel()
