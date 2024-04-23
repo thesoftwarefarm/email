@@ -4,6 +4,8 @@ namespace TsfCorp\Email\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use TsfCorp\Email\DefaultWebhookEmailModelResolver;
+use TsfCorp\Email\IncomingWebhookPayload;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Events\EmailClicked;
 use TsfCorp\Email\Events\EmailComplained;
@@ -38,7 +40,12 @@ class MailgunWebhookController
             return response('Invalid signature', 403);
         }
 
-        $email = EmailModel::getByRemoteIdentifier("<{$request->input('event-data.message.headers.message-id')}>");
+        $incoming_webhook_payload = IncomingWebhookPayload::makeForMailgun($request->all());
+
+        /** @var \TsfCorp\Email\WebhookEmailModelResolverInterface $resolver */
+        $resolver = config('email.webhook_email_model_resolver', DefaultWebhookEmailModelResolver::class);
+
+        $email = $resolver::resolve($incoming_webhook_payload);
 
         if (!$email) {
             return response('Email not found.', 406);

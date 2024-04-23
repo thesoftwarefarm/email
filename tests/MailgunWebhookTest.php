@@ -5,11 +5,40 @@ namespace TsfCorp\Email\Tests;
 use TsfCorp\Email\Email;
 use Illuminate\Support\Facades\Event;
 use TsfCorp\Email\Events\EmailFailed;
+use TsfCorp\Email\IncomingWebhookPayload;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Models\EmailRecipient;
 
 class MailgunWebhookTest extends TestCase
 {
+    public function test_it_parses_incoming_webhook()
+    {
+        $incoming_webhook = IncomingWebhookPayload::makeForMailgun([
+            'signature' => 'signature',
+            'event-data' => [
+                'message' => [
+                    'headers' => [
+                        'message-id' => 'EMAIL_IDENTIFIER'
+                    ]
+                ],
+                'event' => 'failed',
+                'severity' => 'permanent',
+                'recipient' => 'to@mail.com',
+                'reason' => 'suppress-bounce',
+                'delivery-status' => [
+                    'code' => 605,
+                ],
+                'user-variables' => [
+                    'key_1' => 'value_1',
+                ],
+            ],
+        ]);
+
+        $this->assertEquals('mailgun', $incoming_webhook->getProvider());
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $incoming_webhook->getRemoteIdentifier());
+        $this->assertEquals(['key_1' => 'value_1'], $incoming_webhook->getMetadata());
+    }
+
     public function test_failed_event_without_reason()
     {
         Event::fake();

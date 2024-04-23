@@ -38,4 +38,19 @@ class IncomingWebhookPayload
     {
         return $this->metadata;
     }
+
+    /**
+     * @param array $payload
+     * @return static
+     */
+    public static function makeForMailgun($payload)
+    {
+        $remote_identifier = data_get($payload, 'event-data.message.headers.message-id');
+        $metadata = data_get($payload, 'event-data.user-variables');
+        return new static(
+            'mailgun',
+            "<$remote_identifier>",
+            (array)$metadata
+        );
+    }
 }
