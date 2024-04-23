@@ -49,6 +49,10 @@ class Email
     /**
      * @var array
      */
+    private $metadata = [];
+    /**
+     * @var array
+     */
     private $available_providers = ['mailgun', 'ses', 'google-smtp'];
     /**
      * @var \TsfCorp\Email\Models\EmailModel|null
@@ -228,6 +232,17 @@ class Email
     }
 
     /**
+     * @param \TsfCorp\Email\Attachment $attachment
+     * @return static
+     */
+    public function addMetadata($key, $value)
+    {
+        $this->metadata[$key] = $value;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getRecipients()
@@ -319,6 +334,7 @@ class Email
         $this->model->subject = $this->subject;
         $this->model->body = $this->body;
         $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
+        $this->model->metadata = count($this->metadata) ? json_encode($this->metadata) : null;
         $this->model->provider = $this->provider;
         $this->model->status = EmailModel::STATUS_PENDING;
         $this->model->save();
