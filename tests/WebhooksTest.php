@@ -57,7 +57,7 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(BouncedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForFailed($to, 'reason')]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForBounced($to, 'reason')]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
 
         $email->processIncomingWebhook($webhook);

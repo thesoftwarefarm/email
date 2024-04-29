@@ -5,7 +5,7 @@ namespace TsfCorp\Email\Webhooks;
 class WebhookRecipient
 {
     public const DELIVERED = 'delivered';
-    public const FAILED = 'failed';
+    public const BOUNCED = 'bounced';
     public const OPENED = 'opened';
     public const CLICKED = 'clicked';
     public const UNSUBSCRIBED = 'unsubscribed';
@@ -42,9 +42,9 @@ class WebhookRecipient
         return new static($email, self::DELIVERED);
     }
 
-    public static function makeForFailed(string $email, ?string $message = null): static
+    public static function makeForBounced(string $email, ?string $message = null): static
     {
-        return new static($email, self::FAILED, $message);
+        return new static($email, self::BOUNCED, $message);
     }
 
     public static function makeForOpened(string $email): static

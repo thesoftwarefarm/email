@@ -23,6 +23,6 @@ class SesBouncedWebhook implements BouncedWebhook
     {
         $recipients = data_get($this->payload, 'bounce.bouncedRecipients', []);
 
-        return array_map(fn($recipient) => WebhookRecipient::makeForFailed($recipient['emailAddress'], $recipient['diagnosticCode'] ?? null), $recipients);
+        return array_map(fn($recipient) => WebhookRecipient::makeForBounced($recipient['emailAddress'], $recipient['diagnosticCode'] ?? null), $recipients);
     }
 }

@@ -27,7 +27,7 @@ class MailgunBouncedWebhook implements BouncedWebhook
         $reason_from_message = data_get($this->payload, 'event-data.delivery-status.message');
 
         return [
-            WebhookRecipient::makeForFailed($recipient, $reason_from_description ?? $reason_from_message),
+            WebhookRecipient::makeForBounced($recipient, $reason_from_description ?? $reason_from_message),
         ];
     }
 }

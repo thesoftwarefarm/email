@@ -82,7 +82,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunBouncedWebhook::class, $failed_webhook);
         $this->assertInstanceOf(BouncedWebhook::class, $failed_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $failed_webhook->getRemoteIdentifier());
-        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com')], $failed_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForBounced('to@mail.com')], $failed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
         $this->assertEquals($payload, $failed_webhook->getPayload());
 
@@ -98,7 +98,7 @@ class MailgunWebhookTest extends TestCase
             ],
         ];
 
-        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'description')], MailgunWebhookFactory::make($payload)->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForBounced('to@mail.com', 'description')], MailgunWebhookFactory::make($payload)->getRecipients());
 
         // test the reason is taken from "message" property when exist
         $payload = [
@@ -112,7 +112,7 @@ class MailgunWebhookTest extends TestCase
             ],
         ];
 
-        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'message')], MailgunWebhookFactory::make($payload)->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForBounced('to@mail.com', 'message')], MailgunWebhookFactory::make($payload)->getRecipients());
     }
 
     public function test_parsing_opened_webhook()

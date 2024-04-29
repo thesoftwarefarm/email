@@ -89,7 +89,7 @@ class SesWebhookTest extends TestCase
         $this->assertInstanceOf(SesBouncedWebhook::class, $failed_webhook);
         $this->assertInstanceOf(BouncedWebhook::class, $failed_webhook);
         $this->assertEquals('EMAIL_IDENTIFIER', $failed_webhook->getRemoteIdentifier());
-        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'Diagnostic code')], $failed_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForBounced('to@mail.com', 'Diagnostic code')], $failed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
         $this->assertEquals($payload, $failed_webhook->getPayload());
     }
