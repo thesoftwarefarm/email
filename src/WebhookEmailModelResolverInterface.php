@@ -2,11 +2,10 @@
 
 namespace TsfCorp\Email;
 
+use TsfCorp\Email\Models\EmailModel;
+use TsfCorp\Email\Webhooks\IncomingWebhook;
+
 interface WebhookEmailModelResolverInterface
 {
-    /**
-     * @param \TsfCorp\Email\IncomingWebhookPayload $incoming_webhook
-     * @return \TsfCorp\Email\Models\EmailModel|null
-     */
-    public static function resolve(IncomingWebhookPayload $incoming_webhook);
+    public static function resolve(IncomingWebhook $webhook): ?EmailModel;
 }
