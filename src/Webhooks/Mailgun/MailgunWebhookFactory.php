@@ -14,7 +14,7 @@ class MailgunWebhookFactory implements WebhookFactory
 
         return match ($event) {
             'delivered' => new MailgunDeliveredWebhook($payload),
-            'failed' => new MailgunFailedWebhook($payload),
+            'failed' => new MailgunBouncedWebhook($payload),
             'opened' => new MailgunOpenedWebhook($payload),
             'clicked' => new MailgunClickedWebhook($payload),
             'unsubscribed' => new MailgunUnsubscribedWebhook($payload),

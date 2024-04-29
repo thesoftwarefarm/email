@@ -15,7 +15,7 @@ use TsfCorp\Email\Models\EmailRecipient;
 use TsfCorp\Email\Webhooks\ClickedWebhook;
 use TsfCorp\Email\Webhooks\ComplainedWebhook;
 use TsfCorp\Email\Webhooks\DeliveredWebhook;
-use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
 use TsfCorp\Email\Webhooks\OpenedWebhook;
 use TsfCorp\Email\Webhooks\UnsubscribedWebhook;
 use TsfCorp\Email\Webhooks\WebhookRecipient;
@@ -45,7 +45,7 @@ class WebhooksTest extends TestCase
         Event::assertDispatched(EmailDelivered::class);
     }
 
-    public function test_it_processes_failed_webhook()
+    public function test_it_processes_bounced_webhook()
     {
         Event::fake();
 
@@ -55,7 +55,7 @@ class WebhooksTest extends TestCase
         $email->remote_identifier = 'identifier';
         $email->save();
 
-        $webhook = Mockery::mock(FailedWebhook::class);
+        $webhook = Mockery::mock(BouncedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
         $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForFailed($to, 'reason')]);
         $webhook->shouldReceive('getPayload')->andReturn([]);

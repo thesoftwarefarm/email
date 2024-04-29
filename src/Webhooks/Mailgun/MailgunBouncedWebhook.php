@@ -2,10 +2,10 @@
 
 namespace TsfCorp\Email\Webhooks\Mailgun;
 
-use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
 use TsfCorp\Email\Webhooks\WebhookRecipient;
 
-class MailgunFailedWebhook implements FailedWebhook
+class MailgunBouncedWebhook implements BouncedWebhook
 {
     use InteractsWithMailgunPayload;
 

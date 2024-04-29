@@ -2,10 +2,10 @@
 
 namespace TsfCorp\Email\Webhooks\Ses;
 
-use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
 use TsfCorp\Email\Webhooks\WebhookRecipient;
 
-class SesFailedWebhook implements FailedWebhook
+class SesBouncedWebhook implements BouncedWebhook
 {
     use InteractsWithSesPayload;
 

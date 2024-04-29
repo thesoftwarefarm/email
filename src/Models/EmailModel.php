@@ -14,7 +14,7 @@ use TsfCorp\Email\Jobs\EmailJob;
 use TsfCorp\Email\Webhooks\ClickedWebhook;
 use TsfCorp\Email\Webhooks\ComplainedWebhook;
 use TsfCorp\Email\Webhooks\DeliveredWebhook;
-use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
 use TsfCorp\Email\Webhooks\IncomingWebhook;
 use TsfCorp\Email\Webhooks\OpenedWebhook;
 use TsfCorp\Email\Webhooks\UnsubscribedWebhook;
@@ -139,7 +139,7 @@ class EmailModel extends Model
 
             match (true) {
                 is_a($webhook, DeliveredWebhook::class) => $this->processDeliveredWebhook($recipient, $webhook_recipient, $webhook),
-                is_a($webhook, FailedWebhook::class) => $this->processFailedWebhook($recipient, $webhook_recipient, $webhook),
+                is_a($webhook, BouncedWebhook::class) => $this->processBouncedWebhook($recipient, $webhook_recipient, $webhook),
                 is_a($webhook, OpenedWebhook::class) => $this->processOpenedWebhook($recipient, $webhook_recipient, $webhook),
                 is_a($webhook, ClickedWebhook::class) => $this->processClickedWebhook($recipient, $webhook_recipient, $webhook),
                 is_a($webhook, UnsubscribedWebhook::class) => $this->processUnsubscribedWebhook($recipient, $webhook_recipient, $webhook),
@@ -165,10 +165,10 @@ class EmailModel extends Model
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
      * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
-     * @param \TsfCorp\Email\Webhooks\FailedWebhook $webhook
+     * @param \TsfCorp\Email\Webhooks\BouncedWebhook $webhook
      * @return void
      */
-    private function processFailedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, FailedWebhook $webhook)
+    private function processBouncedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, BouncedWebhook $webhook)
     {
         $recipient->status = EmailRecipient::STATUS_FAILED;
         $recipient->notes = $webhook_recipient->getMessage();

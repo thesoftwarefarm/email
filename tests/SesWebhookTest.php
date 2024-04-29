@@ -12,10 +12,10 @@ use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Models\EmailRecipient;
 use TsfCorp\Email\Webhooks\ComplainedWebhook;
 use TsfCorp\Email\Webhooks\DeliveredWebhook;
-use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
 use TsfCorp\Email\Webhooks\Ses\SesComplainedWebhook;
 use TsfCorp\Email\Webhooks\Ses\SesDeliveredWebhook;
-use TsfCorp\Email\Webhooks\Ses\SesFailedWebhook;
+use TsfCorp\Email\Webhooks\Ses\SesBouncedWebhook;
 use TsfCorp\Email\Webhooks\Ses\SesWebhookFactory;
 use TsfCorp\Email\Webhooks\UnknownWebhook;
 use TsfCorp\Email\Webhooks\WebhookRecipient;
@@ -59,7 +59,7 @@ class SesWebhookTest extends TestCase
         $this->assertEquals($payload, $delivered_webhook->getPayload());
     }
 
-    public function test_parsing_failed_webhook()
+    public function test_parsing_bounced_webhook()
     {
         $payload = [
             'notificationType' => 'Bounce',
@@ -86,8 +86,8 @@ class SesWebhookTest extends TestCase
 
         $failed_webhook = SesWebhookFactory::make($payload);
 
-        $this->assertInstanceOf(SesFailedWebhook::class, $failed_webhook);
-        $this->assertInstanceOf(FailedWebhook::class, $failed_webhook);
+        $this->assertInstanceOf(SesBouncedWebhook::class, $failed_webhook);
+        $this->assertInstanceOf(BouncedWebhook::class, $failed_webhook);
         $this->assertEquals('EMAIL_IDENTIFIER', $failed_webhook->getRemoteIdentifier());
         $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'Diagnostic code')], $failed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
@@ -244,7 +244,7 @@ class SesWebhookTest extends TestCase
         Event::assertDispatched(EmailDelivered::class);
     }
 
-    public function test_request_for_failed_webhook()
+    public function test_request_for_bounce_webhook()
     {
         Event::fake();
         $email = (new Email())->to('to@mail.com')->enqueue();

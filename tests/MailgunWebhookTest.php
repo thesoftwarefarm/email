@@ -11,11 +11,11 @@ use TsfCorp\Email\Models\EmailRecipient;
 use TsfCorp\Email\Webhooks\ClickedWebhook;
 use TsfCorp\Email\Webhooks\ComplainedWebhook;
 use TsfCorp\Email\Webhooks\DeliveredWebhook;
-use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunClickedWebhook;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunComplainedWebhook;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunDeliveredWebhook;
-use TsfCorp\Email\Webhooks\Mailgun\MailgunFailedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunBouncedWebhook;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunOpenedWebhook;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunUnsubscribedWebhook;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunWebhookFactory;
@@ -60,7 +60,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertEquals($payload, $delivered_webhook->getPayload());
     }
 
-    public function test_parsing_failed_webhook()
+    public function test_parsing_bounced_webhook()
     {
         $payload = [
             'event-data' => [
@@ -79,8 +79,8 @@ class MailgunWebhookTest extends TestCase
 
         $failed_webhook = MailgunWebhookFactory::make($payload);
 
-        $this->assertInstanceOf(MailgunFailedWebhook::class, $failed_webhook);
-        $this->assertInstanceOf(FailedWebhook::class, $failed_webhook);
+        $this->assertInstanceOf(MailgunBouncedWebhook::class, $failed_webhook);
+        $this->assertInstanceOf(BouncedWebhook::class, $failed_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $failed_webhook->getRemoteIdentifier());
         $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com')], $failed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
@@ -255,7 +255,7 @@ class MailgunWebhookTest extends TestCase
         Event::assertDispatched(EmailDelivered::class);
     }
 
-    public function test_request_for_failed_webhook()
+    public function test_request_for_bounced_webhook()
     {
         Event::fake();
 

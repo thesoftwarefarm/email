@@ -14,7 +14,7 @@ class SesWebhookFactory implements WebhookFactory
 
         return match ($event) {
             'Delivery' => new SesDeliveredWebhook($payload),
-            'Bounce' => new SesFailedWebhook($payload),
+            'Bounce' => new SesBouncedWebhook($payload),
             'Complaint' => new SesComplainedWebhook($payload),
             default => new UnknownWebhook(),
         };
