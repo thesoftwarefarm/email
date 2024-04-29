@@ -21,9 +21,4 @@ class SesFailedWebhook implements FailedWebhook
 
         return array_map(fn($recipient) => $recipient['emailAddress'], $recipients);
     }
-
-    public function getReason(): ?string
-    {
-        return '';
-    }
 }
