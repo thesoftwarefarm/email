@@ -18,6 +18,7 @@ use TsfCorp\Email\Webhooks\Ses\SesDeliveredWebhook;
 use TsfCorp\Email\Webhooks\Ses\SesFailedWebhook;
 use TsfCorp\Email\Webhooks\Ses\SesWebhookFactory;
 use TsfCorp\Email\Webhooks\UnknownWebhook;
+use TsfCorp\Email\Webhooks\WebhookRecipient;
 
 class SesWebhookTest extends TestCase
 {
@@ -49,10 +50,11 @@ class SesWebhookTest extends TestCase
 
         $delivered_webhook = SesWebhookFactory::make($payload);
 
+
         $this->assertInstanceOf(SesDeliveredWebhook::class, $delivered_webhook);
         $this->assertInstanceOf(DeliveredWebhook::class, $delivered_webhook);
         $this->assertEquals('EMAIL_IDENTIFIER', $delivered_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $delivered_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForDelivered('to@mail.com')], $delivered_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $delivered_webhook->getMetadata());
         $this->assertEquals($payload, $delivered_webhook->getPayload());
     }
@@ -87,7 +89,7 @@ class SesWebhookTest extends TestCase
         $this->assertInstanceOf(SesFailedWebhook::class, $failed_webhook);
         $this->assertInstanceOf(FailedWebhook::class, $failed_webhook);
         $this->assertEquals('EMAIL_IDENTIFIER', $failed_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $failed_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'Diagnostic code')], $failed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
         $this->assertEquals($payload, $failed_webhook->getPayload());
     }
@@ -118,7 +120,7 @@ class SesWebhookTest extends TestCase
         $this->assertInstanceOf(SesComplainedWebhook::class, $complained_webhook);
         $this->assertInstanceOf(ComplainedWebhook::class, $complained_webhook);
         $this->assertEquals('EMAIL_IDENTIFIER', $complained_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $complained_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForComplained('to@mail.com')], $complained_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $complained_webhook->getMetadata());
         $this->assertEquals($payload, $complained_webhook->getPayload());
     }

@@ -18,6 +18,7 @@ use TsfCorp\Email\Webhooks\FailedWebhook;
 use TsfCorp\Email\Webhooks\IncomingWebhook;
 use TsfCorp\Email\Webhooks\OpenedWebhook;
 use TsfCorp\Email\Webhooks\UnsubscribedWebhook;
+use TsfCorp\Email\Webhooks\WebhookRecipient;
 
 class EmailModel extends Model
 {
@@ -129,30 +130,31 @@ class EmailModel extends Model
      */
     public function processIncomingWebhook(IncomingWebhook $webhook)
     {
-        foreach($webhook->getRecipients() as $email) {
-            $recipient = $this->getRecipientByEmail($email);
+        foreach($webhook->getRecipients() as $webhook_recipient) {
+            $recipient = $this->getRecipientByEmail($webhook_recipient->getEmail());
 
             if(!$recipient) {
                 continue;
             }
 
             match (true) {
-                is_a($webhook, DeliveredWebhook::class) => $this->processDeliveredWebhook($recipient, $webhook),
-                is_a($webhook, FailedWebhook::class) => $this->processFaileddWebhook($recipient, $webhook),
-                is_a($webhook, OpenedWebhook::class) => $this->processOpenedWebhook($recipient, $webhook),
-                is_a($webhook, ClickedWebhook::class) => $this->processClickedWebhook($recipient, $webhook),
-                is_a($webhook, UnsubscribedWebhook::class) => $this->processUnsubscribedWebhook($recipient, $webhook),
-                is_a($webhook, ComplainedWebhook::class) => $this->processComplainedWebhook($recipient, $webhook),
+                is_a($webhook, DeliveredWebhook::class) => $this->processDeliveredWebhook($recipient, $webhook_recipient, $webhook),
+                is_a($webhook, FailedWebhook::class) => $this->processFailedWebhook($recipient, $webhook_recipient, $webhook),
+                is_a($webhook, OpenedWebhook::class) => $this->processOpenedWebhook($recipient, $webhook_recipient, $webhook),
+                is_a($webhook, ClickedWebhook::class) => $this->processClickedWebhook($recipient, $webhook_recipient, $webhook),
+                is_a($webhook, UnsubscribedWebhook::class) => $this->processUnsubscribedWebhook($recipient, $webhook_recipient, $webhook),
+                is_a($webhook, ComplainedWebhook::class) => $this->processComplainedWebhook($recipient, $webhook_recipient, $webhook),
             };
         }
     }
 
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
      * @param \TsfCorp\Email\Webhooks\DeliveredWebhook $webhook
      * @return void
      */
-    private function processDeliveredWebhook(EmailRecipient $recipient, DeliveredWebhook $webhook)
+    private function processDeliveredWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, DeliveredWebhook $webhook)
     {
         $recipient->status = EmailRecipient::STATUS_DELIVERED;
         $recipient->save();
@@ -162,13 +164,14 @@ class EmailModel extends Model
 
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
      * @param \TsfCorp\Email\Webhooks\FailedWebhook $webhook
      * @return void
      */
-    private function processFaileddWebhook(EmailRecipient $recipient, FailedWebhook $webhook)
+    private function processFailedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, FailedWebhook $webhook)
     {
         $recipient->status = EmailRecipient::STATUS_FAILED;
-        $recipient->notes = $webhook->getReason();
+        $recipient->notes = $webhook_recipient->getMessage();
         $recipient->save();
 
         event(new EmailFailed($this, $recipient, $recipient->notes, $webhook->getPayload()));
@@ -176,40 +179,44 @@ class EmailModel extends Model
 
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
      * @param \TsfCorp\Email\Webhooks\OpenedWebhook $webhook
      * @return void
      */
-    private function processOpenedWebhook(EmailRecipient $recipient, OpenedWebhook $webhook)
+    private function processOpenedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, OpenedWebhook $webhook)
     {
          event(new EmailOpened($this, $recipient, $webhook->getPayload()));
     }
 
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
      * @param \TsfCorp\Email\Webhooks\ClickedWebhook $webhook
      * @return void
      */
-    private function processClickedWebhook(EmailRecipient $recipient, ClickedWebhook $webhook)
+    private function processClickedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, ClickedWebhook $webhook)
     {
          event(new EmailClicked($this, $recipient, $webhook->getPayload()));
     }
 
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
      * @param \TsfCorp\Email\Webhooks\UnsubscribedWebhook $webhook
      * @return void
      */
-    private function processUnsubscribedWebhook(EmailRecipient $recipient, UnsubscribedWebhook $webhook)
+    private function processUnsubscribedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, UnsubscribedWebhook $webhook)
     {
          event(new EmailUnsubscribed($this, $recipient, $webhook->getPayload()));
     }
 
     /**
      * @param \TsfCorp\Email\Models\EmailRecipient $recipient
+     * @param \TsfCorp\Email\Webhooks\WebhookRecipient $webhook_recipient
      * @param \TsfCorp\Email\Webhooks\ComplainedWebhook $webhook
      * @return void
      */
-    private function processComplainedWebhook(EmailRecipient $recipient, ComplainedWebhook $webhook)
+    private function processComplainedWebhook(EmailRecipient $recipient, WebhookRecipient $webhook_recipient, ComplainedWebhook $webhook)
     {
         event(new EmailComplained($this, $recipient, $webhook->getPayload()));
     }

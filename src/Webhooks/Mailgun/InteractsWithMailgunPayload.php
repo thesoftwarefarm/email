@@ -11,13 +11,6 @@ trait InteractsWithMailgunPayload
         return "<{$remote_identifier}>";
     }
 
-    public function getRecipients(): array
-    {
-        return [
-            data_get($this->getPayload(), 'event-data.recipient'),
-        ];
-    }
-
     public function getMetadata(): array
     {
         return (array) data_get($this->getPayload(), 'event-data.user-variables');

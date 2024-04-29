@@ -18,6 +18,7 @@ use TsfCorp\Email\Webhooks\DeliveredWebhook;
 use TsfCorp\Email\Webhooks\FailedWebhook;
 use TsfCorp\Email\Webhooks\OpenedWebhook;
 use TsfCorp\Email\Webhooks\UnsubscribedWebhook;
+use TsfCorp\Email\Webhooks\WebhookRecipient;
 
 class WebhooksTest extends TestCase
 {
@@ -33,7 +34,7 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(DeliveredWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([$to]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForDelivered($to)]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
 
         $email->processIncomingWebhook($webhook);
@@ -56,9 +57,8 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(FailedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([$to]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForFailed($to, 'reason')]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
-        $webhook->shouldReceive('getReason')->andReturn('reason');
 
         $email->processIncomingWebhook($webhook);
 
@@ -81,7 +81,7 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(OpenedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([$to]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForOpened($to)]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
 
         $email->processIncomingWebhook($webhook);
@@ -101,7 +101,7 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(ClickedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([$to]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForClicked($to)]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
 
         $email->processIncomingWebhook($webhook);
@@ -121,7 +121,7 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(UnsubscribedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([$to]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForUnsubscribed($to)]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
 
         $email->processIncomingWebhook($webhook);
@@ -141,7 +141,7 @@ class WebhooksTest extends TestCase
 
         $webhook = Mockery::mock(ComplainedWebhook::class);
         $webhook->shouldReceive('getRemoteIdentifier')->andReturn($email->remote_identifier);
-        $webhook->shouldReceive('getRecipients')->andReturn([$to]);
+        $webhook->shouldReceive('getRecipients')->andReturn([WebhookRecipient::makeForComplained($to)]);
         $webhook->shouldReceive('getPayload')->andReturn([]);
 
         $email->processIncomingWebhook($webhook);

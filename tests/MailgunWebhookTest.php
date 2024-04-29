@@ -22,6 +22,7 @@ use TsfCorp\Email\Webhooks\Mailgun\MailgunWebhookFactory;
 use TsfCorp\Email\Webhooks\OpenedWebhook;
 use TsfCorp\Email\Webhooks\UnknownWebhook;
 use TsfCorp\Email\Webhooks\UnsubscribedWebhook;
+use TsfCorp\Email\Webhooks\WebhookRecipient;
 
 class MailgunWebhookTest extends TestCase
 {
@@ -54,7 +55,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunDeliveredWebhook::class, $delivered_webhook);
         $this->assertInstanceOf(DeliveredWebhook::class, $delivered_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $delivered_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $delivered_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForDelivered('to@mail.com')], $delivered_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $delivered_webhook->getMetadata());
         $this->assertEquals($payload, $delivered_webhook->getPayload());
     }
@@ -81,15 +82,15 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunFailedWebhook::class, $failed_webhook);
         $this->assertInstanceOf(FailedWebhook::class, $failed_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $failed_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $failed_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com')], $failed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
         $this->assertEquals($payload, $failed_webhook->getPayload());
-        $this->assertNull($failed_webhook->getReason());
 
         // test the reason is taken from "description" property when exist
         $payload = [
             'event-data' => [
                 'event' => 'failed',
+                'recipient' => 'to@mail.com',
                 'delivery-status' => [
                     'code' => 605,
                     'description' => 'description',
@@ -97,12 +98,13 @@ class MailgunWebhookTest extends TestCase
             ],
         ];
 
-        $this->assertEquals('description', MailgunWebhookFactory::make($payload)->getReason());
+        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'description')], MailgunWebhookFactory::make($payload)->getRecipients());
 
         // test the reason is taken from "message" property when exist
         $payload = [
             'event-data' => [
                 'event' => 'failed',
+                'recipient' => 'to@mail.com',
                 'delivery-status' => [
                     'code' => 605,
                     'message' => 'message',
@@ -110,7 +112,7 @@ class MailgunWebhookTest extends TestCase
             ],
         ];
 
-        $this->assertEquals('message', MailgunWebhookFactory::make($payload)->getReason());
+        $this->assertEquals([WebhookRecipient::makeForFailed('to@mail.com', 'message')], MailgunWebhookFactory::make($payload)->getRecipients());
     }
 
     public function test_parsing_opened_webhook()
@@ -135,7 +137,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunOpenedWebhook::class, $opened_webhook);
         $this->assertInstanceOf(OpenedWebhook::class, $opened_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $opened_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $opened_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForOpened('to@mail.com')], $opened_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $opened_webhook->getMetadata());
         $this->assertEquals($payload, $opened_webhook->getPayload());
     }
@@ -162,7 +164,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunClickedWebhook::class, $clicked_webhook);
         $this->assertInstanceOf(ClickedWebhook::class, $clicked_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $clicked_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $clicked_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForClicked('to@mail.com')], $clicked_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $clicked_webhook->getMetadata());
         $this->assertEquals($payload, $clicked_webhook->getPayload());
     }
@@ -189,7 +191,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunUnsubscribedWebhook::class, $unsubscribed_webhook);
         $this->assertInstanceOf(UnsubscribedWebhook::class, $unsubscribed_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $unsubscribed_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $unsubscribed_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForUnsubscribed('to@mail.com')], $unsubscribed_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $unsubscribed_webhook->getMetadata());
         $this->assertEquals($payload, $unsubscribed_webhook->getPayload());
     }
@@ -216,7 +218,7 @@ class MailgunWebhookTest extends TestCase
         $this->assertInstanceOf(MailgunComplainedWebhook::class, $complained_webhook);
         $this->assertInstanceOf(ComplainedWebhook::class, $complained_webhook);
         $this->assertEquals('<EMAIL_IDENTIFIER>', $complained_webhook->getRemoteIdentifier());
-        $this->assertEquals(['to@mail.com'], $complained_webhook->getRecipients());
+        $this->assertEquals([WebhookRecipient::makeForComplained('to@mail.com')], $complained_webhook->getRecipients());
         $this->assertEquals(['key_1' => 'value_1'], $complained_webhook->getMetadata());
         $this->assertEquals($payload, $complained_webhook->getPayload());
     }
