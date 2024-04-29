@@ -4,53 +4,64 @@ namespace TsfCorp\Email\Tests;
 
 use TsfCorp\Email\Email;
 use Illuminate\Support\Facades\Event;
+use TsfCorp\Email\Events\EmailDelivered;
 use TsfCorp\Email\Events\EmailFailed;
-use TsfCorp\Email\IncomingWebhookPayload;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Models\EmailRecipient;
+use TsfCorp\Email\Webhooks\ClickedWebhook;
+use TsfCorp\Email\Webhooks\ComplainedWebhook;
+use TsfCorp\Email\Webhooks\DeliveredWebhook;
+use TsfCorp\Email\Webhooks\FailedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunClickedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunComplainedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunDeliveredWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunFailedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunOpenedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunUnsubscribedWebhook;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunWebhookFactory;
+use TsfCorp\Email\Webhooks\OpenedWebhook;
+use TsfCorp\Email\Webhooks\UnknownWebhook;
+use TsfCorp\Email\Webhooks\UnsubscribedWebhook;
 
 class MailgunWebhookTest extends TestCase
 {
-    public function test_it_parses_incoming_webhook()
+    public function test_parsing_unknown_webhook()
     {
-        $incoming_webhook = IncomingWebhookPayload::makeForMailgun([
-            'signature' => 'signature',
+        $unknown_webhook = MailgunWebhookFactory::make([]);
+
+        $this->assertInstanceOf(UnknownWebhook::class, $unknown_webhook);
+    }
+
+    public function test_parsing_delivered_webhook()
+    {
+        $payload = [
             'event-data' => [
                 'message' => [
                     'headers' => [
                         'message-id' => 'EMAIL_IDENTIFIER'
                     ]
                 ],
-                'event' => 'failed',
-                'severity' => 'permanent',
+                'event' => 'delivered',
                 'recipient' => 'to@mail.com',
-                'reason' => 'suppress-bounce',
-                'delivery-status' => [
-                    'code' => 605,
-                ],
                 'user-variables' => [
                     'key_1' => 'value_1',
                 ],
             ],
-        ]);
+        ];
 
-        $this->assertEquals('mailgun', $incoming_webhook->getProvider());
-        $this->assertEquals('<EMAIL_IDENTIFIER>', $incoming_webhook->getRemoteIdentifier());
-        $this->assertEquals(['key_1' => 'value_1'], $incoming_webhook->getMetadata());
+        $delivered_webhook = MailgunWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(MailgunDeliveredWebhook::class, $delivered_webhook);
+        $this->assertInstanceOf(DeliveredWebhook::class, $delivered_webhook);
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $delivered_webhook->getRemoteIdentifier());
+        $this->assertEquals(['to@mail.com'], $delivered_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $delivered_webhook->getMetadata());
+        $this->assertEquals($payload, $delivered_webhook->getPayload());
     }
 
-    public function test_failed_event_without_reason()
+    public function test_parsing_failed_webhook()
     {
-        Event::fake();
-
-        $model = (new Email())->to('to@mail.com')->enqueue()->getModel();
-
-        $model->remote_identifier = '<EMAIL_IDENTIFIER>';
-        $model->status = EmailModel::STATUS_SENT;
-        $model->save();
-
-        $response = $this->call('POST', '/webhook-mailgun', [
-            'signature' => $this->createSignature(),
+        $payload = [
             'event-data' => [
                 'message' => [
                     'headers' => [
@@ -58,65 +69,159 @@ class MailgunWebhookTest extends TestCase
                     ]
                 ],
                 'event' => 'failed',
-                'severity' => 'permanent',
                 'recipient' => 'to@mail.com',
-                'reason' => 'suppress-bounce',
-                'delivery-status' => [
-                    'code' => 605,
+                'user-variables' => [
+                    'key_1' => 'value_1',
                 ],
             ],
-        ]);
+        ];
 
+        $failed_webhook = MailgunWebhookFactory::make($payload);
 
-        $model = $model->fresh();
-        $recipient = $model->getRecipientByEmail('to@mail.com');
+        $this->assertInstanceOf(MailgunFailedWebhook::class, $failed_webhook);
+        $this->assertInstanceOf(FailedWebhook::class, $failed_webhook);
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $failed_webhook->getRemoteIdentifier());
+        $this->assertEquals(['to@mail.com'], $failed_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
+        $this->assertEquals($payload, $failed_webhook->getPayload());
+        $this->assertNull($failed_webhook->getReason());
 
-        $response->assertStatus(200);
-        $this->assertEquals(EmailRecipient::STATUS_FAILED, $recipient->status);
-        $this->assertNull($recipient->notes);
-        Event::assertDispatched(EmailFailed::class);
-    }
-
-    public function test_failed_event_with_reason_taken_from_message_key()
-    {
-        Event::fake();
-
-        $model = (new Email())->to('to@mail.com')->enqueue()->getModel();
-
-        $model->remote_identifier = '<EMAIL_IDENTIFIER>';
-        $model->status = EmailModel::STATUS_SENT;
-        $model->save();
-
-        $response = $this->call('POST', '/webhook-mailgun', [
-            'signature' => $this->createSignature(),
+        // test the reason is taken from "description" property when exist
+        $payload = [
             'event-data' => [
-                'message' => [
-                    'headers' => [
-                        'message-id' => 'EMAIL_IDENTIFIER'
-                    ]
-                ],
                 'event' => 'failed',
-                'severity' => 'permanent',
-                'recipient' => 'to@mail.com',
-                'reason' => 'suppress-bounce',
+                'delivery-status' => [
+                    'code' => 605,
+                    'description' => 'description',
+                ],
+            ],
+        ];
+
+        $this->assertEquals('description', MailgunWebhookFactory::make($payload)->getReason());
+
+        // test the reason is taken from "message" property when exist
+        $payload = [
+            'event-data' => [
+                'event' => 'failed',
                 'delivery-status' => [
                     'code' => 605,
                     'message' => 'message',
                 ],
             ],
-        ]);
+        ];
 
-
-        $model = $model->fresh();
-        $recipient = $model->getRecipientByEmail('to@mail.com');
-
-        $response->assertStatus(200);
-        $this->assertEquals(EmailRecipient::STATUS_FAILED, $recipient->status);
-        $this->assertEquals('message', $recipient->notes);
-        Event::assertDispatched(EmailFailed::class);
+        $this->assertEquals('message', MailgunWebhookFactory::make($payload)->getReason());
     }
 
-    public function test_failed_event_with_reason_taken_from_description_key()
+    public function test_parsing_opened_webhook()
+    {
+        $payload = [
+            'event-data' => [
+                'message' => [
+                    'headers' => [
+                        'message-id' => 'EMAIL_IDENTIFIER'
+                    ]
+                ],
+                'event' => 'opened',
+                'recipient' => 'to@mail.com',
+                'user-variables' => [
+                    'key_1' => 'value_1',
+                ],
+            ],
+        ];
+
+        $opened_webhook = MailgunWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(MailgunOpenedWebhook::class, $opened_webhook);
+        $this->assertInstanceOf(OpenedWebhook::class, $opened_webhook);
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $opened_webhook->getRemoteIdentifier());
+        $this->assertEquals(['to@mail.com'], $opened_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $opened_webhook->getMetadata());
+        $this->assertEquals($payload, $opened_webhook->getPayload());
+    }
+
+    public function test_parsing_clicked_webhook()
+    {
+        $payload = [
+            'event-data' => [
+                'message' => [
+                    'headers' => [
+                        'message-id' => 'EMAIL_IDENTIFIER'
+                    ]
+                ],
+                'event' => 'clicked',
+                'recipient' => 'to@mail.com',
+                'user-variables' => [
+                    'key_1' => 'value_1',
+                ],
+            ],
+        ];
+
+        $clicked_webhook = MailgunWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(MailgunClickedWebhook::class, $clicked_webhook);
+        $this->assertInstanceOf(ClickedWebhook::class, $clicked_webhook);
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $clicked_webhook->getRemoteIdentifier());
+        $this->assertEquals(['to@mail.com'], $clicked_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $clicked_webhook->getMetadata());
+        $this->assertEquals($payload, $clicked_webhook->getPayload());
+    }
+
+    public function test_parsing_unsubscribed_webhook()
+    {
+        $payload = [
+            'event-data' => [
+                'message' => [
+                    'headers' => [
+                        'message-id' => 'EMAIL_IDENTIFIER'
+                    ]
+                ],
+                'event' => 'unsubscribed',
+                'recipient' => 'to@mail.com',
+                'user-variables' => [
+                    'key_1' => 'value_1',
+                ],
+            ],
+        ];
+
+        $unsubscribed_webhook = MailgunWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(MailgunUnsubscribedWebhook::class, $unsubscribed_webhook);
+        $this->assertInstanceOf(UnsubscribedWebhook::class, $unsubscribed_webhook);
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $unsubscribed_webhook->getRemoteIdentifier());
+        $this->assertEquals(['to@mail.com'], $unsubscribed_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $unsubscribed_webhook->getMetadata());
+        $this->assertEquals($payload, $unsubscribed_webhook->getPayload());
+    }
+
+    public function test_parsing_complained_webhook()
+    {
+        $payload = [
+            'event-data' => [
+                'message' => [
+                    'headers' => [
+                        'message-id' => 'EMAIL_IDENTIFIER'
+                    ]
+                ],
+                'event' => 'complained',
+                'recipient' => 'to@mail.com',
+                'user-variables' => [
+                    'key_1' => 'value_1',
+                ],
+            ],
+        ];
+
+        $complained_webhook = MailgunWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(MailgunComplainedWebhook::class, $complained_webhook);
+        $this->assertInstanceOf(ComplainedWebhook::class, $complained_webhook);
+        $this->assertEquals('<EMAIL_IDENTIFIER>', $complained_webhook->getRemoteIdentifier());
+        $this->assertEquals(['to@mail.com'], $complained_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $complained_webhook->getMetadata());
+        $this->assertEquals($payload, $complained_webhook->getPayload());
+    }
+
+    public function test_request_for_delivered_webhook()
     {
         Event::fake();
 
@@ -126,7 +231,39 @@ class MailgunWebhookTest extends TestCase
         $model->status = EmailModel::STATUS_SENT;
         $model->save();
 
-        $response = $this->call('POST', '/webhook-mailgun', [
+        $response = $this->post('/webhook-mailgun', [
+            'signature' => $this->createSignature(),
+            'event-data' => [
+                'message' => [
+                    'headers' => [
+                        'message-id' => 'EMAIL_IDENTIFIER'
+                    ]
+                ],
+                'event' => 'delivered',
+                'recipient' => 'to@mail.com',
+            ],
+        ]);
+
+
+        $model = $model->fresh();
+        $recipient = $model->getRecipientByEmail('to@mail.com');
+
+        $response->assertStatus(200);
+        $this->assertEquals(EmailRecipient::STATUS_DELIVERED, $recipient->status);
+        Event::assertDispatched(EmailDelivered::class);
+    }
+
+    public function test_request_for_failed_webhook()
+    {
+        Event::fake();
+
+        $model = (new Email())->to('to@mail.com')->enqueue()->getModel();
+
+        $model->remote_identifier = '<EMAIL_IDENTIFIER>';
+        $model->status = EmailModel::STATUS_SENT;
+        $model->save();
+
+        $response = $this->post('/webhook-mailgun', [
             'signature' => $this->createSignature(),
             'event-data' => [
                 'message' => [
@@ -144,7 +281,6 @@ class MailgunWebhookTest extends TestCase
                 ],
             ],
         ]);
-
 
         $model = $model->fresh();
         $recipient = $model->getRecipientByEmail('to@mail.com');
