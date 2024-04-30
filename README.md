@@ -8,6 +8,12 @@ project/database which act as a collector.
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master
 project. This can be kept alive with `supervisor`
 
+# Upgrade from 8.x to 9.x
+
+Amazon SES default webhooks configuration under Identity is no longer supported. Swich to configuration sets
+
+- add a new column to emails table called "metadata" TEXT nullable
+
 # Upgrade from 7.x to 8.x
 
 * `addAttachment` method signature was changed to `addAttachment(TsfCorp\Email\Attachment $attachment)`. This object can be constructed via
@@ -32,7 +38,7 @@ In order to migrate older emails to the new structure, you have to:
 1. publish the new migration file for `email_recipients` and run the migration
 2. build a script which loops through current emails and insert the recipients for to, cc and bcc and execute it
 3. create a migration which should drop to, cc, bcc and bounces_count columns
-4. create a a migration which removes the email_bounces table
+4. create a migration which removes the email_bounces table
 
 # Upgrade from 5.x to 6.x
 
