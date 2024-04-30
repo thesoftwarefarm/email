@@ -74,6 +74,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Webhook Email Model Resolver
+    |--------------------------------------------------------------------------
+    |
+    | When an webhook comes in, this class is used to resolve the email model
+    | from database.
+    |
+    */
+
+    'webhook_email_model_resolver' => \TsfCorp\Email\DefaultWebhookEmailModelResolver::class,
+
+    /*
+    |--------------------------------------------------------------------------
     | Max retries
     |--------------------------------------------------------------------------
     |

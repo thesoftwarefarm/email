@@ -4,14 +4,8 @@ namespace TsfCorp\Email\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use TsfCorp\Email\Models\EmailModel;
-use TsfCorp\Email\Events\EmailClicked;
-use TsfCorp\Email\Events\EmailComplained;
-use TsfCorp\Email\Events\EmailDelivered;
-use TsfCorp\Email\Events\EmailFailed;
-use TsfCorp\Email\Events\EmailOpened;
-use TsfCorp\Email\Events\EmailUnsubscribed;
-use TsfCorp\Email\Models\EmailRecipient;
+use TsfCorp\Email\DefaultWebhookEmailModelResolver;
+use TsfCorp\Email\Webhooks\Mailgun\MailgunWebhookFactory;
 
 class MailgunWebhookController
 {
@@ -38,110 +32,20 @@ class MailgunWebhookController
             return response('Invalid signature', 403);
         }
 
-        $email = EmailModel::getByRemoteIdentifier("<{$request->input('event-data.message.headers.message-id')}>");
+        /** @var \TsfCorp\Email\WebhookEmailModelResolverInterface $resolver */
+        $resolver = config('email.webhook_email_model_resolver', DefaultWebhookEmailModelResolver::class);
+
+        $webhook = MailgunWebhookFactory::make($request->input());
+
+        $email = $resolver::resolve($webhook);
 
         if (!$email) {
             return response('Email not found.', 406);
         }
 
-        $event = $request->input('event-data');
-
-        $recipient = $email->getRecipientByEmail($event['recipient']);
-
-        if (!$recipient) {
-            return response('Email recipient not found.', 406);
-        }
-
-        match ($event['event']) {
-            'delivered' => $this->processDeliveredEvent($email, $recipient, $event),
-            'failed' => $this->processFailedEvent($email, $recipient, $event),
-            'opened' => $this->processOpenedEvent($email, $recipient, $event),
-            'clicked' => $this->processClickedEvent($email, $recipient, $event),
-            'unsubscribed' => $this->processUnsubscribedEvent($email, $recipient, $event),
-            'complained' => $this->processComplainedEvent($email, $recipient, $event),
-            default => null,
-        };
+        $email->processIncomingWebhook($webhook);
 
         return response('Ok');
-    }
-
-    /**
-     * @param EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param $event
-     * @return void
-     */
-    private function processDeliveredEvent(EmailModel $email, EmailRecipient $recipient, $event)
-    {
-        $recipient->status = EmailRecipient::STATUS_DELIVERED;
-        $recipient->save();
-
-        event(new EmailDelivered($email, $recipient, $event));
-    }
-
-    /**
-     * @param EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param $event
-     * @return void
-     */
-    private function processFailedEvent(EmailModel $email, EmailRecipient $recipient, $event)
-    {
-        $notes = match (true) {
-            isset($event['delivery-status']['message']) => $event['delivery-status']['message'],
-            isset($event['delivery-status']['description']) => $event['delivery-status']['description'],
-            default => null,
-        };
-
-        $recipient->status = EmailRecipient::STATUS_FAILED;
-        $recipient->notes = $notes;
-        $recipient->save();
-
-        event(new EmailFailed($email, $recipient, $recipient->notes, $event));
-    }
-
-    /**
-     * @param EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param $event
-     * @return void
-     */
-    private function processComplainedEvent(EmailModel $email, EmailRecipient $recipient, $event)
-    {
-        event(new EmailComplained($email, $recipient, $event));
-    }
-
-    /**
-     * @param EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param $event
-     * @return void
-     */
-    private function processUnsubscribedEvent(EmailModel $email, EmailRecipient $recipient, $event)
-    {
-        event(new EmailUnsubscribed($email, $recipient, $event));
-    }
-
-    /**
-     * @param EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param $event
-     * @return void
-     */
-    private function processClickedEvent(EmailModel $email, EmailRecipient $recipient, $event)
-    {
-        event(new EmailClicked($email, $recipient, $event));
-    }
-
-    /**
-     * @param EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param $event
-     * @return void
-     */
-    private function processOpenedEvent(EmailModel $email, EmailRecipient $recipient, $event)
-    {
-        event(new EmailOpened($email, $recipient, $event));
     }
 
     /**

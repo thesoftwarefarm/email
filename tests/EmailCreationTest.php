@@ -58,6 +58,8 @@ class EmailCreationTest extends TestCase
             ->addAttachment(Attachment::path('attachment_1.txt'))
             ->addAttachment(Attachment::path('attachment_2.txt', 'custom_name_2.txt'))
             ->addAttachment(Attachment::disk('s3')->setPath('attachment_3.txt', 'custom_name_3.txt'))
+            ->addMetadata('key_1', 'value_1')
+            ->addMetadata('key_2', 'value_2')
             ->via('mailgun')
             ->enqueue();
 
@@ -66,6 +68,7 @@ class EmailCreationTest extends TestCase
         $from = json_decode($model->from);
         $reply_to = json_decode($model->reply_to);
         $attachments = json_decode($model->attachments);
+        $metadata = json_decode($model->metadata, true);
 
         $this->assertEquals(config('email.project'), $model->project);
 
@@ -107,6 +110,10 @@ class EmailCreationTest extends TestCase
         $this->assertEquals('custom_name_3.txt', $attachments[2]->name);
 
         $this->assertEquals(EmailModel::STATUS_PENDING, $model->status);
+
+        $this->assertCount(2, $metadata);
+        $this->assertEquals('value_1', $metadata['key_1']);
+        $this->assertEquals('value_2', $metadata['key_2']);
     }
 
     public function test_enqueue_method_inserts_the_record_and_job_not_dispatched()

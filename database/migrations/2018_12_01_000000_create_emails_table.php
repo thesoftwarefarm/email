@@ -15,6 +15,7 @@ class CreateEmailsTable extends Migration
             $table->text('from');
             $table->string('subject')->nullable()->index();
             $table->text('attachments')->nullable();
+            $table->text('metadata')->nullable();
             $table->text('reply_to')->nullable();
             $table->longText('body')->nullable();
             $table->string('provider')->default('mailgun')->index();

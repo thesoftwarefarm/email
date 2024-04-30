@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mailer\Bridge\Amazon\Transport\SesApiAsyncAwsTransport;
 use Symfony\Component\Mailer\Bridge\Google\Transport\GmailSmtpTransport;
 use Symfony\Component\Mailer\Bridge\Mailgun\Transport\MailgunApiTransport;
+use Symfony\Component\Mailer\Header\MetadataHeader;
 use Symfony\Component\Mailer\Transport\TransportInterface;
 use Symfony\Component\Mime\Address;
 use Throwable;
@@ -86,6 +87,8 @@ class Transport
                     ->setName($attachment->name ?? null);
             }, $this->fromJson($email->attachments));
 
+            $metadata = (array)$this->fromJson($email->metadata);
+
             $symfony_email = (new \Symfony\Component\Mime\Email())
                 ->from(new Address($from->email, $from->name ?? ''))
                 ->to(...$to)
@@ -106,6 +109,12 @@ class Transport
                 }
             } catch (Throwable $e) {
                 // do not rethrow the error in case a file can't be attached.
+            }
+
+            if ($metadata) {
+                foreach ($metadata as $key => $value) {
+                    $symfony_email->getHeaders()->add(new MetadataHeader($key, $value));
+                }
             }
 
             $response = $this->provider->send($symfony_email);
