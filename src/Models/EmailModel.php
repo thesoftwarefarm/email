@@ -144,6 +144,7 @@ class EmailModel extends Model
                 is_a($webhook, ClickedWebhook::class) => $this->processClickedWebhook($recipient, $webhook_recipient, $webhook),
                 is_a($webhook, UnsubscribedWebhook::class) => $this->processUnsubscribedWebhook($recipient, $webhook_recipient, $webhook),
                 is_a($webhook, ComplainedWebhook::class) => $this->processComplainedWebhook($recipient, $webhook_recipient, $webhook),
+                default => null,
             };
         }
     }
