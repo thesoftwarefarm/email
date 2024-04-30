@@ -10,7 +10,7 @@ class SesWebhookFactory implements WebhookFactory
 {
     public static function make(array $payload): IncomingWebhook
     {
-        $event = data_get($payload, 'notificationType');
+        $event = data_get($payload, 'eventType');
 
         return match ($event) {
             'Delivery' => new SesDeliveredWebhook($payload),

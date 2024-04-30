@@ -140,4 +140,5 @@ Add `http://app.example/webhook-mailgun` link to "Permanent Failure" section wit
    endpoint
 3. After the subscription was created, AWS will make a post request to specified endpoint with an URL which should be
    used to confirm subscription. That url can be found in app logs. Copy and paste that in browser.
-4. Edit Amazon SES domain and add the topic created at step 1 under Notifications -> Bounce Notifications SNS Topic
+4. Create a configuration set
+5. After the configuration set was created, configure Event Destination and select Amazon SNS where you select the topic created at step 1.

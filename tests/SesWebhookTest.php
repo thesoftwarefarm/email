@@ -32,7 +32,7 @@ class SesWebhookTest extends TestCase
     public function test_parsing_delivered_webhook()
     {
         $payload = [
-            'notificationType' => 'Delivery',
+            'eventType' => 'Delivery',
             'delivery' => [
                 'recipients' => [
                     'to@mail.com',
@@ -62,7 +62,7 @@ class SesWebhookTest extends TestCase
     public function test_parsing_bounced_webhook()
     {
         $payload = [
-            'notificationType' => 'Bounce',
+            'eventType' => 'Bounce',
             'bounce' => [
                 'bounceType' => 'Permanent',
                 'bouncedRecipients' => [
@@ -97,7 +97,7 @@ class SesWebhookTest extends TestCase
     public function test_parsing_complained_webhook()
     {
         $payload = [
-            'notificationType' => 'Complaint',
+            'eventType' => 'Complaint',
             'complaint' => [
                 'complainedRecipients' => [
                     [
@@ -218,7 +218,7 @@ class SesWebhookTest extends TestCase
             'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
             'TopicArn' => '1',
             'Message' => json_encode([
-                'notificationType' => 'Delivery',
+                'eventType' => 'Delivery',
                 'delivery' => [
                     'recipients' => [
                         'to@mail.com',
@@ -262,7 +262,7 @@ class SesWebhookTest extends TestCase
             'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
             'TopicArn' => '1',
             'Message' => json_encode([
-                'notificationType' => 'Bounce',
+                'eventType' => 'Bounce',
                 'bounce' => [
                     'bounceType' => 'Permanent',
                     'bouncedRecipients' => [
@@ -313,7 +313,7 @@ class SesWebhookTest extends TestCase
             'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
             'TopicArn' => '1',
             'Message' => json_encode([
-                'notificationType' => 'Complaint',
+                'eventType' => 'Complaint',
                 'complaint' => [
                     'complainedRecipients' => [
                         [
