@@ -10,7 +10,7 @@ project. This can be kept alive with `supervisor`
 
 # Upgrade from 8.x to 9.x
 
-Amazon SES default webhooks configuration under Identity is no longer supported. Swich to configuration sets
+Amazon SES default webhooks configuration under Identity is no longer supported. Switch to configuration sets
 
 - add a new column to emails table called "metadata" TEXT nullable
 
