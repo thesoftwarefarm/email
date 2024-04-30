@@ -80,6 +80,30 @@ class EmailModel extends Model
     }
 
     /**
+     * @return array
+     */
+    public function getAttachments()
+    {
+        if(!$this->attachments) {
+            return [];
+        }
+
+        return json_decode($this->attachments, true);
+    }
+
+    /**
+     * @return array
+     */
+    public function getMetadata()
+    {
+        if(!$this->metadata) {
+            return [];
+        }
+
+        return json_decode($this->metadata, true);
+    }
+
+    /**
      * Dispatches a job for current record
      * @param \Carbon\Carbon|null $delay
      */
