@@ -72,7 +72,7 @@ class EmailModel extends Model
 
     /**
      * @param $identifier
-     * @return \TsfCorp\Email\Models\EmailModel|null
+     * @return static|null
      */
     public static function getByRemoteIdentifier($identifier)
     {
