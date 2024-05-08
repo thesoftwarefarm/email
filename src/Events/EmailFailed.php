@@ -18,7 +18,7 @@ class EmailFailed
     /**
      * @var string|null
      */
-    private $reason;
+    public $reason;
     /**
      * @var mixed
      */
