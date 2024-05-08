@@ -29,6 +29,6 @@ class EmailRecipient extends Model
      */
     public function getEmailAddress()
     {
-        $this->email;
+        return $this->email;
     }
 }
