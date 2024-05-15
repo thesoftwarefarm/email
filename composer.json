@@ -13,11 +13,11 @@
         "ext-json": "*",
         "laravel/framework": "^9.0|^10.0|^11.0",
         "aws/aws-php-sns-message-validator": "^1.5",
-        "symfony/mailgun-mailer": "^6.0",
-        "symfony/http-client": "^6.0",
-        "symfony/google-mailer": "^6.0",
+        "symfony/mailgun-mailer": "^7.0",
+        "symfony/http-client": "^7.0",
+        "symfony/google-mailer": "^7.0",
         "async-aws/ses": "^1.3",
-        "symfony/amazon-mailer": "^6.0"
+        "symfony/amazon-mailer": "^7.0"
     },
     "require-dev": {
         "orchestra/testbench": "^7.0",
