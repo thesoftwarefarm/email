@@ -16,7 +16,6 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0'
-          tools: composer:v1
 
       - name: Cache composer packages
         id: composer-cache
