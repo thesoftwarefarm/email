@@ -20,7 +20,7 @@ class EmailSendingFailed
      * @param \TsfCorp\Email\Models\EmailModel $email
      * @param \Throwable|null $exception
      */
-    public function __construct(EmailModel $email, Throwable $exception = null)
+    public function __construct(EmailModel $email, ?Throwable $exception = null)
     {
         $this->email = $email;
         $this->exception = $exception;

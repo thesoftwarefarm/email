@@ -356,7 +356,7 @@ class Email
      *
      * @throws \Exception
      */
-    public function dispatch(Carbon $delay = null)
+    public function dispatch(?Carbon $delay = null)
     {
         if (!$this->model) {
             throw new Exception('There is no email to be dispatched.');
@@ -371,7 +371,7 @@ class Email
      * @return static
      * @throws \Exception
      */
-    public function send(Carbon $delay = null)
+    public function send(?Carbon $delay = null)
     {
         return $this->enqueue()->dispatch($delay);
     }
