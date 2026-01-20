@@ -4,44 +4,21 @@ namespace TsfCorp\Email;
 
 class Attachment implements \JsonSerializable
 {
-    /**
-     * @var null|string
-     */
-    private $path = null;
-    /**
-     * @var null|string
-     */
-    private $disk = null;
-    /**
-     * @var null|string
-     */
-    private $name = null;
+    private ?string $disk = null;
+    private ?string $path = null;
+    private ?string $name = null;
 
-    /**
-     * @param $path
-     * @param $name
-     * @return static
-     */
-    public static function path($path, $name = null)
+    public static function path(string $path, ?string $name = null): static
     {
         return (new static())->setPath($path, $name);
     }
 
-    /**
-     * @param $disk
-     * @return static
-     */
-    public static function disk($disk)
+    public static function disk(string $disk): static
     {
         return (new static())->setDisk($disk);
     }
 
-    /**
-     * @param $path
-     * @param $name
-     * @return static
-     */
-    public function setPath($path, $name = null)
+    public function setPath(string $path, ?string $name = null): static
     {
         $this->path = $path;
         $this->name = $name;
@@ -49,56 +26,36 @@ class Attachment implements \JsonSerializable
         return $this;
     }
 
-    /**
-     * @param $disk
-     * @return static
-     */
-    public function setDisk($disk)
+    public function setDisk(string $disk): static
     {
         $this->disk = $disk;
 
         return $this;
     }
 
-    /**
-     * @param $name
-     * @return static
-     */
-    public function setName($name)
+    public function setName(string $name): static
     {
         $this->name = $name;
 
         return $this;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getPath()
+    public function getPath(): ?string
     {
         return $this->path;
     }
 
-    /**
-     * @return string
-     */
-    public function getDisk()
+    public function getDisk(): string
     {
         return $this->disk ?? 'local';
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name ?? basename($this->path);
     }
 
-    /**
-     * @return array
-     */
-    public function toArray()
+    public function toArray(): array
     {
         return [
             'path' => $this->getPath(),
@@ -107,10 +64,7 @@ class Attachment implements \JsonSerializable
         ];
     }
 
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }
