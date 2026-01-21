@@ -2,7 +2,9 @@
 
 namespace TsfCorp\Email;
 
-class Attachment implements \JsonSerializable
+use JsonSerializable;
+
+class Attachment implements JsonSerializable
 {
     private ?string $disk = null;
     private ?string $path = null;
