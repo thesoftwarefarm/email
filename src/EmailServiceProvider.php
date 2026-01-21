@@ -8,19 +8,7 @@ use TsfCorp\Email\Commands\InstallCommand;
 
 class EmailServiceProvider extends ServiceProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
-
-    /**
-     * Perform post-registration booting of services.
-     *
-     * @return void
-     */
-    public function boot()
+    public function boot(): void
     {
         if (!$this->app->routesAreCached()) {
             require __DIR__ . '/Http/routes.php';
@@ -40,18 +28,5 @@ class EmailServiceProvider extends ServiceProvider
                 DispatchJobs::class,
             ]);
         }
-    }
-
-    /**
-     * Added for L.5.1 compatibility
-     */
-    public function register()
-    {
-
-    }
-
-    public function provides()
-    {
-        return ['email'];
     }
 }
