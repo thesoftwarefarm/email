@@ -8,6 +8,12 @@ project/database which act as a collector.
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master
 project. This can be kept alive with `supervisor`
 
+# Upgrade from 8.x to 9.x
+
+Amazon SES default webhooks configuration under Identity is no longer supported. Switch to configuration sets
+
+- add a new column to emails table called "metadata" TEXT nullable
+
 # Upgrade from 7.x to 8.x
 
 * `addAttachment` method signature was changed to `addAttachment(TsfCorp\Email\Attachment $attachment)`. This object can be constructed via
@@ -32,7 +38,7 @@ In order to migrate older emails to the new structure, you have to:
 1. publish the new migration file for `email_recipients` and run the migration
 2. build a script which loops through current emails and insert the recipients for to, cc and bcc and execute it
 3. create a migration which should drop to, cc, bcc and bounces_count columns
-4. create a a migration which removes the email_bounces table
+4. create a migration which removes the email_bounces table
 
 # Upgrade from 5.x to 6.x
 
@@ -140,4 +146,5 @@ Add `http://app.example/webhook-mailgun` link to "Permanent Failure" section wit
    endpoint
 3. After the subscription was created, AWS will make a post request to specified endpoint with an URL which should be
    used to confirm subscription. That url can be found in app logs. Copy and paste that in browser.
-4. Edit Amazon SES domain and add the topic created at step 1 under Notifications -> Bounce Notifications SNS Topic
+4. Create a configuration set
+5. After the configuration set was created, configure Event Destination and select Amazon SNS where you select the topic created at step 1.

@@ -17,18 +17,18 @@ class EmailRecipient extends Model
     public const STATUS_FAILED = 'failed';
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function email()
-    {
-        return $this->belongsTo(EmailModel::class, 'email_id');
-    }
-
-    /**
      * @return \Symfony\Component\Mime\Address
      */
     public function asMimeAddress()
     {
         return new Address($this->email, $this->name ?? '');
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmailAddress()
+    {
+        return $this->email;
     }
 }

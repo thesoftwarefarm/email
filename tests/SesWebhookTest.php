@@ -10,9 +10,121 @@ use TsfCorp\Email\Events\EmailComplained;
 use TsfCorp\Email\Events\EmailDelivered;
 use TsfCorp\Email\Events\EmailFailed;
 use TsfCorp\Email\Models\EmailRecipient;
+use TsfCorp\Email\Webhooks\ComplainedWebhook;
+use TsfCorp\Email\Webhooks\DeliveredWebhook;
+use TsfCorp\Email\Webhooks\BouncedWebhook;
+use TsfCorp\Email\Webhooks\Ses\SesComplainedWebhook;
+use TsfCorp\Email\Webhooks\Ses\SesDeliveredWebhook;
+use TsfCorp\Email\Webhooks\Ses\SesBouncedWebhook;
+use TsfCorp\Email\Webhooks\Ses\SesWebhookFactory;
+use TsfCorp\Email\Webhooks\UnknownWebhook;
+use TsfCorp\Email\Webhooks\WebhookRecipient;
 
 class SesWebhookTest extends TestCase
 {
+    public function test_parsing_unknown_webhook()
+    {
+        $unknown_webhook = SesWebhookFactory::make([]);
+
+        $this->assertInstanceOf(UnknownWebhook::class, $unknown_webhook);
+    }
+
+    public function test_parsing_delivered_webhook()
+    {
+        $payload = [
+            'eventType' => 'Delivery',
+            'delivery' => [
+                'recipients' => [
+                    'to@mail.com',
+                ]
+            ],
+            'mail' => [
+                'messageId' => 'EMAIL_IDENTIFIER',
+                'tags' => [
+                    'key_1' => [
+                        'value_1' // the value coming from ses is an array
+                    ]
+                ],
+            ],
+        ];
+
+        $delivered_webhook = SesWebhookFactory::make($payload);
+
+
+        $this->assertInstanceOf(SesDeliveredWebhook::class, $delivered_webhook);
+        $this->assertInstanceOf(DeliveredWebhook::class, $delivered_webhook);
+        $this->assertEquals('EMAIL_IDENTIFIER', $delivered_webhook->getRemoteIdentifier());
+        $this->assertEquals([WebhookRecipient::makeForDelivered('to@mail.com')], $delivered_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $delivered_webhook->getMetadata());
+        $this->assertEquals($payload, $delivered_webhook->getPayload());
+    }
+
+    public function test_parsing_bounced_webhook()
+    {
+        $payload = [
+            'eventType' => 'Bounce',
+            'bounce' => [
+                'bounceType' => 'Permanent',
+                'bouncedRecipients' => [
+                    [
+                        'emailAddress' => 'to@mail.com',
+                        'action' => 'failed',
+                        'status' => '5.1.1',
+                        'diagnosticCode' => 'Diagnostic code',
+                    ],
+                ],
+            ],
+            'mail' => [
+                'messageId' => 'EMAIL_IDENTIFIER',
+                'tags' => [
+                    'key_1' => [
+                        'value_1' // the value coming from ses is an array
+                    ]
+                ],
+            ],
+        ];
+
+        $failed_webhook = SesWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(SesBouncedWebhook::class, $failed_webhook);
+        $this->assertInstanceOf(BouncedWebhook::class, $failed_webhook);
+        $this->assertEquals('EMAIL_IDENTIFIER', $failed_webhook->getRemoteIdentifier());
+        $this->assertEquals([WebhookRecipient::makeForBounced('to@mail.com', 'Diagnostic code')], $failed_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $failed_webhook->getMetadata());
+        $this->assertEquals($payload, $failed_webhook->getPayload());
+    }
+
+    public function test_parsing_complained_webhook()
+    {
+        $payload = [
+            'eventType' => 'Complaint',
+            'complaint' => [
+                'complainedRecipients' => [
+                    [
+                        'emailAddress' => 'to@mail.com',
+                    ],
+                ]
+            ],
+            'mail' => [
+                'messageId' => 'EMAIL_IDENTIFIER',
+                'tags' => [
+                    'key_1' => [
+                        'value_1' // the value coming from ses is an array
+                    ]
+                ],
+            ]
+        ];
+
+        $complained_webhook = SesWebhookFactory::make($payload);
+
+        $this->assertInstanceOf(SesComplainedWebhook::class, $complained_webhook);
+        $this->assertInstanceOf(ComplainedWebhook::class, $complained_webhook);
+        $this->assertEquals('EMAIL_IDENTIFIER', $complained_webhook->getRemoteIdentifier());
+        $this->assertEquals([WebhookRecipient::makeForComplained('to@mail.com')], $complained_webhook->getRecipients());
+        $this->assertEquals(['key_1' => 'value_1'], $complained_webhook->getMetadata());
+        $this->assertEquals($payload, $complained_webhook->getPayload());
+    }
+
     public function test_it_returns_error_if_no_payload_was_supplied()
     {
         $payload = null;
@@ -88,36 +200,7 @@ class SesWebhookTest extends TestCase
         $response->assertContent('Confirmation link received.');
     }
 
-    public function test_it_returns_error_if_email_not_found_in_database()
-    {
-        $this->instance(MessageValidator::class, Mockery::mock(MessageValidator::class, function ($mock) {
-            $mock->shouldReceive('isValid')->once()->andReturn(true);
-        }));
-
-        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
-            'Type' => 'Notification',
-            'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
-            'TopicArn' => '1',
-            'Message' => json_encode([
-                'notificationType' => 'Bounce',
-                'bounce' => [
-                    'bounceType' => 'Permanent'
-                ],
-                'mail' => [
-                    'messageId' => 'dummy indentifier'
-                ]
-            ]),
-            'Timestamp' => '2019-08-19T06:45:00.710Z',
-            'SignatureVersion' => '1',
-            'Signature' => '1',
-            'SigningCertURL' => 'url',
-        ]));
-
-        $response->assertStatus(404);
-        $response->assertContent('Email not found.');
-    }
-
-    public function test_it_processes_a_bounce_event()
+    public function test_request_for_delivered_webhook()
     {
         Event::fake();
         $email = (new Email())->to('to@mail.com')->enqueue();
@@ -135,7 +218,51 @@ class SesWebhookTest extends TestCase
             'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
             'TopicArn' => '1',
             'Message' => json_encode([
-                'notificationType' => 'Bounce',
+                'eventType' => 'Delivery',
+                'delivery' => [
+                    'recipients' => [
+                        'to@mail.com',
+                    ]
+                ],
+                'mail' => [
+                    'messageId' => 'EMAIL_IDENTIFIER'
+                ]
+            ]),
+            'Timestamp' => '2019-08-19T06:45:00.710Z',
+            'SignatureVersion' => '1',
+            'Signature' => '1',
+            'SigningCertURL' => 'url',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertContent('Ok');
+
+        $model = $model->fresh();
+        $recipient = $model->getRecipientByEmail('to@mail.com');
+
+        $this->assertEquals(EmailRecipient::STATUS_DELIVERED, $recipient->status);
+        Event::assertDispatched(EmailDelivered::class);
+    }
+
+    public function test_request_for_bounce_webhook()
+    {
+        Event::fake();
+        $email = (new Email())->to('to@mail.com')->enqueue();
+
+        $model = $email->getModel();
+        $model->remote_identifier = 'EMAIL_IDENTIFIER';
+        $model->save();
+
+        $this->instance(MessageValidator::class, Mockery::mock(MessageValidator::class, function ($mock) {
+            $mock->shouldReceive('isValid')->once()->andReturn(true);
+        }));
+
+        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
+            'Type' => 'Notification',
+            'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
+            'TopicArn' => '1',
+            'Message' => json_encode([
+                'eventType' => 'Bounce',
                 'bounce' => [
                     'bounceType' => 'Permanent',
                     'bouncedRecipients' => [
@@ -168,7 +295,7 @@ class SesWebhookTest extends TestCase
         Event::assertDispatched(EmailFailed::class);
     }
 
-    public function test_it_processes_a_complaint_event()
+    public function test_request_for_complained_webhook()
     {
         Event::fake();
         $email = (new Email())->to('to@mail.com')->enqueue();
@@ -186,7 +313,7 @@ class SesWebhookTest extends TestCase
             'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
             'TopicArn' => '1',
             'Message' => json_encode([
-                'notificationType' => 'Complaint',
+                'eventType' => 'Complaint',
                 'complaint' => [
                     'complainedRecipients' => [
                         [
@@ -208,49 +335,5 @@ class SesWebhookTest extends TestCase
         $response->assertContent('Ok');
 
         Event::assertDispatched(EmailComplained::class);
-    }
-
-    public function test_it_processes_a_delivery_event()
-    {
-        Event::fake();
-        $email = (new Email())->to('to@mail.com')->enqueue();
-
-        $model = $email->getModel();
-        $model->remote_identifier = 'EMAIL_IDENTIFIER';
-        $model->save();
-
-        $this->instance(MessageValidator::class, Mockery::mock(MessageValidator::class, function ($mock) {
-            $mock->shouldReceive('isValid')->once()->andReturn(true);
-        }));
-
-        $response = $this->call('POST', '/webhook-ses', [], [], [], [], json_encode([
-            'Type' => 'Notification',
-            'MessageId' => '89ca5d35-1008-5b4a-89b5-08e157a4aae1',
-            'TopicArn' => '1',
-            'Message' => json_encode([
-                'notificationType' => 'Delivery',
-                'delivery' => [
-                    'recipients' => [
-                        'to@mail.com',
-                    ]
-                ],
-                'mail' => [
-                    'messageId' => 'EMAIL_IDENTIFIER'
-                ]
-            ]),
-            'Timestamp' => '2019-08-19T06:45:00.710Z',
-            'SignatureVersion' => '1',
-            'Signature' => '1',
-            'SigningCertURL' => 'url',
-        ]));
-
-        $response->assertStatus(200);
-        $response->assertContent('Ok');
-
-        $model = $model->fresh();
-        $recipient = $model->getRecipientByEmail('to@mail.com');
-
-        $this->assertEquals(EmailRecipient::STATUS_DELIVERED, $recipient->status);
-        Event::assertDispatched(EmailDelivered::class);
     }
 }
