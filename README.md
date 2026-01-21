@@ -8,6 +8,21 @@ project/database which act as a collector.
 If you use this package in cluster mode, make sure the process `php artisan emails:dispatch-jobs` is running on master
 project. This can be kept alive with `supervisor`
 
+# Upgrade from 9.x to 10.x
+
+- Attachment::path method was removed
+- Attachment::disk method was removed
+
+To create a new attachment use
+
+```php
+new Attachment(
+    path: 'file path',
+    name: 'file name'
+    disk: 'disk',
+);
+```
+
 # Upgrade from 8.x to 9.x
 
 Amazon SES default webhooks configuration under Identity is no longer supported. Switch to configuration sets
