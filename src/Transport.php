@@ -55,10 +55,11 @@ class Transport
             }, $this->fromJson($email->reply_to));
 
             $attachments = array_map(function ($attachment) {
-                return (new Attachment())
-                    ->setPath($attachment['path'])
-                    ->setDisk($attachment['disk'])
-                    ->setName($attachment['name'] ?? null);
+                return new Attachment(
+                    path: $attachment['path'],
+                    name: $attachment['name'],
+                    disk: $attachment['disk'],
+                );
             }, $this->fromJson($email->attachments));
 
             $metadata = $this->fromJson($email->metadata);

@@ -6,23 +6,19 @@ use JsonSerializable;
 
 class Attachment implements JsonSerializable
 {
-    private ?string $disk = null;
-    private ?string $path = null;
-    private ?string $name = null;
+    private string $path;
+    private ?string $name;
+    private string $disk;
 
-    public static function path(string $path, ?string $name = null): static
-    {
-        return (new static())->setPath($path, $name);
-    }
-
-    public static function disk(string $disk): static
-    {
-        return (new static())->setDisk($disk);
-    }
-
-    public function setPath(string $path, ?string $name = null): static
+    public function __construct(string $path, ?string $name = null, ?string $disk = 'local')
     {
         $this->path = $path;
+        $this->name = $name;
+        $this->disk = $disk;
+    }
+
+    public function setName(string $name): static
+    {
         $this->name = $name;
 
         return $this;
@@ -31,13 +27,6 @@ class Attachment implements JsonSerializable
     public function setDisk(string $disk): static
     {
         $this->disk = $disk;
-
-        return $this;
-    }
-
-    public function setName(string $name): static
-    {
-        $this->name = $name;
 
         return $this;
     }
@@ -52,7 +41,7 @@ class Attachment implements JsonSerializable
         return $this->disk ?? 'local';
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name ?? basename($this->path);
     }
