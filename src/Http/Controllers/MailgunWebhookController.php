@@ -3,17 +3,14 @@
 namespace TsfCorp\Email\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Validator;
 use TsfCorp\Email\DefaultWebhookEmailModelResolver;
 use TsfCorp\Email\Webhooks\Mailgun\MailgunWebhookFactory;
 
 class MailgunWebhookController
 {
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
         $rules = [
             'event-data.message.headers.message-id' => 'required',
@@ -48,11 +45,7 @@ class MailgunWebhookController
         return response('Ok');
     }
 
-    /**
-     * @param Request $request
-     * @return bool
-     */
-    private function checkSignature(Request $request)
+    private function checkSignature(Request $request): bool
     {
         $signature = hash_hmac('SHA256', $request->input('signature.timestamp') . $request->input('signature.token'), config('email.providers.mailgun.webhook_secret'));
 

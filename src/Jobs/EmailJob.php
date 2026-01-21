@@ -18,33 +18,19 @@ class EmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    /**
-     * @var $id
-     */
-    private $id;
-    /**
-     * @var \TsfCorp\Email\Models\EmailModel|null
-     */
-    private $email;
+    private int $id;
+    private ?EmailModel $email;
 
-    /**
-     * @param $id
-     * @param null $database_connection
-     */
-    public function __construct($id, $database_connection = null)
+    public function __construct(int $id, ?string $database_connection = null)
     {
         $this->id = $id;
         $this->email = EmailModel::on($database_connection)->find($this->id);
     }
 
-    /**
-     *
-     * @throws \Exception
-     */
     public function handle()
     {
         if (!$this->email) {
-            throw new Exception('Record with id [' . $this->id . '] not found.');
+            throw new Exception("Record with id [{$this->id}] not found.");
         }
 
         try {
@@ -62,9 +48,6 @@ class EmailJob implements ShouldQueue
         $this->sendVia($transport);
     }
 
-    /**
-     * @param \TsfCorp\Email\Transport $transport
-     */
     public function sendVia(Transport $transport)
     {
         if (config('app.env') != 'production') {
@@ -79,7 +62,7 @@ class EmailJob implements ShouldQueue
 
         if ($this->email->retries >= config('email.max_retries')) {
             $this->email->status = EmailModel::STATUS_FAILED;
-            $this->email->notes = 'Max retry limit reached. ' . $this->email->notes;
+            $this->email->notes = "Max retry limit reached. {$this->email->notes}";
             $this->email->save();
 
             event(new EmailSendingFailed($this->email));

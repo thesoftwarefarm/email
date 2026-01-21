@@ -104,10 +104,9 @@ class EmailModel extends Model
     }
 
     /**
-     * Dispatches a job for current record
      * @param \Carbon\Carbon|null $delay
      */
-    public function dispatchJob(Carbon $delay = null)
+    public function dispatchJob(?Carbon $delay = null)
     {
         $this->status = EmailModel::STATUS_QUEUED;
         $this->save();

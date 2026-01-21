@@ -7,29 +7,11 @@ use TsfCorp\Email\Models\EmailRecipient;
 
 class EmailFailed
 {
-    /**
-     * @var \TsfCorp\Email\Models\EmailModel
-     */
-    public $email;
-    /**
-     * @var \TsfCorp\Email\Models\EmailRecipient
-     */
-    public $recipient;
-    /**
-     * @var string|null
-     */
-    public $reason;
-    /**
-     * @var mixed
-     */
-    public $payload;
+    public EmailModel $email;
+    public EmailRecipient $recipient;
+    public ?string $reason;
+    public mixed $payload;
 
-    /**
-     * @param \TsfCorp\Email\Models\EmailModel $email
-     * @param \TsfCorp\Email\Models\EmailRecipient $recipient
-     * @param string|null $reason
-     * @param null $payload
-     */
     public function __construct(EmailModel $email, EmailRecipient $recipient, ?string $reason = null, mixed $payload = null)
     {
         $this->email = $email;

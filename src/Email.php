@@ -5,80 +5,33 @@ namespace TsfCorp\Email;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Str;
+use Illuminate\View\View;
 use TsfCorp\Email\Models\EmailModel;
 use TsfCorp\Email\Models\EmailRecipient;
 
 class Email
 {
-    /**
-     * @var string
-     */
-    private $project;
-    /**
-     * @var string
-     */
-    private $uuid;
-    /**
-     * @var string
-     */
-    private $provider;
-    /**
-     * @var array
-     */
-    private $from = [];
-    /**
-     * @var array
-     */
-    private $recipients = [];
-    /**
-     * @var array
-     */
-    private $reply_to = [];
-    /**
-     * @var string
-     */
-    private $subject;
-    /**
-     * @var string
-     */
-    private $body;
-    /**
-     * @var array
-     */
-    private $attachments = [];
-    /**
-     * @var array
-     */
-    private $metadata = [];
-    /**
-     * @var array
-     */
-    private $available_providers = ['mailgun', 'ses', 'google-smtp'];
-    /**
-     * @var \TsfCorp\Email\Models\EmailModel|null
-     */
-    private $model;
-    /**
-     * @var string
-     */
-    private $database_connection = null;
+    private string $provider;
+    private array $from = [];
+    private array $recipients = [];
+    private array $reply_to = [];
+    private string $subject = '';
+    private mixed $body = null;
+    private array $attachments = [];
+    private array $metadata = [];
+    private array $available_providers = ['mailgun', 'ses', 'google-smtp'];
+    private ?EmailModel $model = null;
+    private ?string $database_connection = null;
 
     public function __construct()
     {
-        $this->project = config('email.project');
         $this->provider = config('email.default_provider');
-        $this->uuid = Str::uuid();
     }
 
-    /**
-     * @param $provider
-     * @return static
-     * @throws \Exception
-     */
-    public function via($provider)
+    public function via(string $provider): static
     {
         if (!in_array($provider, $this->available_providers)) {
-            throw new Exception('Unrecognized email provider [' . $provider . ']');
+            throw new Exception("Unrecognized email provider [{$provider}]");
         }
 
         $this->provider = $provider;
@@ -86,25 +39,42 @@ class Email
         return $this;
     }
 
-    /**
-     * @param $name
-     * @return static
-     */
-    public function setDatabaseConnection($name)
+    public function setDatabaseConnection(string $name): static
     {
         $this->database_connection = $name;
 
         return $this;
     }
 
-    /**
-     * @param $type
-     * @param $email
-     * @param $name
-     * @return static
-     * @throws \Exception
-     */
-    public function addRecipient($type, $email, $name = null)
+    public function from(?string $from, ?string $name = null): static
+    {
+        if (!$this->isValidEmailAddress($from)) {
+            throw new Exception("Invalid from address: {$from}");
+        }
+
+        $this->from = [
+            'email' => $from,
+            'name' => $name,
+        ];
+
+        return $this;
+    }
+
+    public function replyTo(?string $reply_to, ?string $name = null): static
+    {
+        if (!$this->isValidEmailAddress($reply_to)) {
+            throw new Exception("Invalid reply to address: {$reply_to}");
+        }
+
+        $this->reply_to[] = [
+            'email' => $reply_to,
+            'name' => $name,
+        ];
+
+        return $this;
+    }
+
+    public function addRecipient(string $type, string $email, ?string $name = null): static
     {
         if (!$this->isValidEmailAddress($email)) {
             throw new Exception("Invalid {$type} address: {$email}");
@@ -119,222 +89,101 @@ class Email
         return $this;
     }
 
-    /**
-     * @param $from
-     * @param null $name
-     * @return static
-     * @throws \Exception
-     */
-    public function from($from, $name = null)
-    {
-        if (!$this->isValidEmailAddress($from)) {
-            throw new Exception("Invalid from address: {$from}");
-        }
-
-        $this->from = [
-            'email' => $from,
-            'name' => $name,
-        ];
-
-        return $this;
-    }
-
-    /**
-     * @param $to
-     * @param null $name
-     * @return static
-     * @throws \Exception
-     */
-    public function to($to, $name = null)
+    public function to(string $to, ?string $name = null): static
     {
         $this->addRecipient(EmailRecipient::TYPE_TO, $to, $name);
 
         return $this;
     }
 
-    /**
-     * @param $cc
-     * @param null $name
-     * @return static
-     * @throws \Exception
-     */
-    public function cc($cc, $name = null)
+    public function cc(string $cc, ?string $name = null): static
     {
         $this->addRecipient(EmailRecipient::TYPE_CC, $cc, $name);
 
         return $this;
     }
 
-    /**
-     * @param $bcc
-     * @param null $name
-     * @return $this
-     * @throws \Exception
-     */
-    public function bcc($bcc, $name = null)
+    public function bcc(string $bcc, ?string $name = null): static
     {
         $this->addRecipient(EmailRecipient::TYPE_BCC, $bcc, $name);
 
         return $this;
     }
 
-    /**
-     * @param $reply_to
-     * @param null $name
-     * @return static
-     * @throws \Exception
-     */
-    public function replyTo($reply_to, $name = null)
-    {
-        if (!$this->isValidEmailAddress($reply_to)) {
-            throw new Exception("Invalid reply to address: {$reply_to}");
-        }
-
-        $this->reply_to[] = [
-            'email' => $reply_to,
-            'name' => $name,
-        ];
-
-        return $this;
-    }
-
-    /**
-     * @param $subject
-     * @return static
-     */
-    public function subject($subject)
+    public function subject(string $subject): static
     {
         $this->subject = $subject;
 
         return $this;
     }
 
-    /**
-     * @param $body
-     * @return static
-     */
-    public function body($body)
+    public function body(mixed $body): static
     {
         $this->body = $body;
 
         return $this;
     }
 
-    /**
-     * @param \TsfCorp\Email\Attachment $attachment
-     * @return static
-     */
-    public function addAttachment(Attachment $attachment)
+    public function addAttachment(Attachment $attachment): static
     {
         $this->attachments[] = $attachment;
 
         return $this;
     }
 
-    /**
-     * @param \TsfCorp\Email\Attachment $attachment
-     * @return static
-     */
-    public function addMetadata($key, $value)
+    public function addMetadata(string $key, mixed $value): static
     {
         $this->metadata[$key] = $value;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getRecipients()
+    public function getRecipients(): array
     {
         return $this->recipients;
     }
 
-    /**
-     * @return array
-     */
-    public function getTo()
+    public function getTo(): array
     {
         return array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_TO);
     }
 
-    /**
-     * @return array
-     */
-    public function getCc()
+    public function getCc(): array
     {
         return array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_CC);
     }
 
-    /**
-     * @return array
-     */
-    public function getBcc()
+    public function getBcc(): array
     {
         return array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_BCC);
     }
 
-    /**
-     * @return \TsfCorp\Email\Models\EmailModel|null
-     */
-    public function getModel()
+    public function getModel(): ?EmailModel
     {
         return $this->model;
     }
 
-    /**
-     * @return array|string[]
-     */
-    public function getAvailableProviders()
-    {
-        return $this->available_providers;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUuid()
-    {
-        return $this->uuid;
-    }
-
-    /**
-     * @return string
-     */
-    public function render()
-    {
-        return $this->body;
-    }
-
-    /**
-     * Saves new email in database
-     *
-     * @return static
-     * @throws \Exception
-     */
-    public function enqueue()
+    public function enqueue(): static
     {
         if (!count($this->from)) {
             $this->from(config('email.from.address'), config('email.from.name'));
         }
 
-        $to = array_filter($this->recipients, fn($recipient) => $recipient['type'] === EmailRecipient::TYPE_TO);
-
-        if (!count($to)) {
+        if (!count($this->getTo())) {
             throw new Exception('Missing to address.');
         }
 
         $this->model = new EmailModel;
         $this->model->setConnection($this->database_connection);
 
-        $this->model->project = $this->project;
-        $this->model->uuid = $this->uuid;
+        $this->model->uuid = Str::uuid();
+        $this->model->project = config('email.project');
         $this->model->from = json_encode($this->from);
         $this->model->reply_to = count($this->reply_to) ? json_encode($this->reply_to) : null;
-        $this->model->subject = $this->subject;
-        $this->model->body = $this->body;
         $this->model->attachments = count($this->attachments) ? json_encode($this->attachments) : null;
         $this->model->metadata = count($this->metadata) ? json_encode($this->metadata) : null;
+        $this->model->subject = $this->subject;
+        $this->model->body = $this->body;
         $this->model->provider = $this->provider;
         $this->model->status = EmailModel::STATUS_PENDING;
         $this->model->save();
@@ -351,12 +200,7 @@ class Email
         return $this;
     }
 
-    /**
-     * Dispatches a job which will send the email
-     *
-     * @throws \Exception
-     */
-    public function dispatch(Carbon $delay = null)
+    public function dispatch(?Carbon $delay = null): static
     {
         if (!$this->model) {
             throw new Exception('There is no email to be dispatched.');
@@ -367,20 +211,12 @@ class Email
         return $this;
     }
 
-    /**
-     * @return static
-     * @throws \Exception
-     */
-    public function send(Carbon $delay = null)
+    public function send(?Carbon $delay = null): static
     {
         return $this->enqueue()->dispatch($delay);
     }
 
-    /**
-     * @param $email_address
-     * @return bool
-     */
-    private function isValidEmailAddress($email_address)
+    private function isValidEmailAddress(?string $email_address): bool
     {
         return !empty($email_address) && filter_var($email_address, FILTER_VALIDATE_EMAIL);
     }

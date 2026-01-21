@@ -17,57 +17,31 @@ use TsfCorp\Email\Models\EmailRecipient;
 
 class Transport
 {
-    /**
-     * @var \Symfony\Component\Mailer\Transport\TransportInterface
-     */
-    private $provider;
-    /**
-     * @var string|null
-     */
-    private $remote_identifier;
-    /**
-     * @var string
-     */
-    private $message;
+    private TransportInterface $provider;
+    private ?string $remote_identifier;
+    private ?string $message;
 
-    /**
-     * @param \Symfony\Component\Mailer\Transport\TransportInterface $provider
-     */
     public function __construct(TransportInterface $provider)
     {
         $this->provider = $provider;
     }
 
-    /**
-     * @return \Symfony\Component\Mailer\Transport\TransportInterface
-     */
-    public function getProvider()
+    public function getProvider(): TransportInterface
     {
         return $this->provider;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getRemoteIdentifier()
+    public function getRemoteIdentifier(): ?string
     {
         return $this->remote_identifier;
     }
 
-    /**
-     * @return string
-     */
-    public function getMessage()
+    public function getMessage(): ?string
     {
         return $this->message;
     }
 
-    /**
-     * @param \TsfCorp\Email\Models\EmailModel $email
-     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
-     * @throws \Throwable
-     */
-    public function send(EmailModel $email)
+    public function send(EmailModel $email): void
     {
         try {
             $from = $this->fromJson($email->from);
@@ -77,20 +51,21 @@ class Transport
             $bcc = $email->bcc->map(fn(EmailRecipient $r) => $r->asMimeAddress());
 
             $reply_to = array_map(function ($recipient) {
-                return new Address($recipient->email, $recipient->name ?? '');
+                return new Address($recipient['email'], $recipient['name'] ?? '');
             }, $this->fromJson($email->reply_to));
 
             $attachments = array_map(function ($attachment) {
-                return (new Attachment())
-                    ->setPath($attachment->path)
-                    ->setDisk($attachment->disk)
-                    ->setName($attachment->name ?? null);
+                return new Attachment(
+                    path: $attachment['path'],
+                    name: $attachment['name'],
+                    disk: $attachment['disk'],
+                );
             }, $this->fromJson($email->attachments));
 
-            $metadata = (array)$this->fromJson($email->metadata);
+            $metadata = $this->fromJson($email->metadata);
 
             $symfony_email = (new \Symfony\Component\Mime\Email())
-                ->from(new Address($from->email, $from->name ?? ''))
+                ->from(new Address($from['email'], $from['name'] ?? ''))
                 ->to(...$to)
                 ->cc(...$cc)
                 ->bcc(...$bcc)
@@ -126,12 +101,7 @@ class Transport
         }
     }
 
-    /**
-     * @param \TsfCorp\Email\Models\EmailModel $email
-     * @return \TsfCorp\Email\Transport
-     * @throws \Exception
-     */
-    public static function resolveFor(EmailModel $email)
+    public static function resolveFor(EmailModel $email): static
     {
         $provider = null;
 
@@ -160,13 +130,9 @@ class Transport
         return new static($provider);
     }
 
-    /**
-     * @param $json
-     * @return array
-     */
-    private function fromJson($json)
+    private function fromJson(?string $json): array
     {
-        $decoded = json_decode($json);
+        $decoded = json_decode((string)$json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             $decoded = [];

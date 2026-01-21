@@ -1,17 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use TsfCorp\Email\Http\Controllers\MailgunWebhookController;
+use TsfCorp\Email\Http\Controllers\SesWebhookController;
 
-/*
-|--------------------------------------------------------------------------
-| Webhooks routes
-|--------------------------------------------------------------------------
-|
-| Endpoints called by third party services when a email is sent on failed
-|
-*/
-
-Route::group(['namespace' => 'TsfCorp\Email\Http\Controllers'], function () {
-    Route::post('/webhook-mailgun', 'MailgunWebhookController@index');
-    Route::post('/webhook-ses', 'SesWebhookController@index');
-});
+Route::post('/webhook-mailgun', [MailgunWebhookController::class, 'index']);
+Route::post('/webhook-ses', [SesWebhookController::class, 'index']);

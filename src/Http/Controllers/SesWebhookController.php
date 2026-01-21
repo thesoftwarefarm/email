@@ -5,18 +5,14 @@ namespace TsfCorp\Email\Http\Controllers;
 use Aws\Sns\Message;
 use Aws\Sns\MessageValidator;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use TsfCorp\Email\DefaultWebhookEmailModelResolver;
 use TsfCorp\Email\Webhooks\Ses\SesWebhookFactory;
 
 class SesWebhookController
 {
-    /**
-     * @param \Illuminate\Http\Request $request
-     * @param \Aws\Sns\MessageValidator $validator
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request, MessageValidator $validator)
+    public function index(Request $request, MessageValidator $validator): Response
     {
         $payload = json_decode($request->getContent(), true);
 
@@ -35,22 +31,14 @@ class SesWebhookController
         };
     }
 
-    /**
-     * @param $payload
-     * @return \Illuminate\Http\Response
-     */
-    private function parseSubscriptionConfirmation($payload)
+    private function parseSubscriptionConfirmation($payload): Response
     {
         Log::info("SubscribeURL: " . $payload['SubscribeURL']);
 
         return response('Confirmation link received.', 200);
     }
 
-    /**
-     * @param $payload
-     * @return \Illuminate\Http\Response
-     */
-    private function parseNotification($payload)
+    private function parseNotification($payload): Response
     {
          /** @var \TsfCorp\Email\WebhookEmailModelResolverInterface $resolver */
         $resolver = config('email.webhook_email_model_resolver', DefaultWebhookEmailModelResolver::class);
