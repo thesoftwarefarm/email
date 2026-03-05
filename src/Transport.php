@@ -130,7 +130,7 @@ class Transport
         return new static($provider);
     }
 
-    private function fromJson(?string $json): array
+    private function fromJson(mixed $json): array
     {
         $decoded = json_decode((string)$json, true);
 

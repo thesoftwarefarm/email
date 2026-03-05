@@ -14,7 +14,7 @@ class SesWebhookController
 {
     public function index(Request $request, MessageValidator $validator): Response
     {
-        $payload = json_decode($request->getContent(), true);
+        $payload = json_decode((string)$request->getContent(), true);
 
         if (empty($payload)) {
             return response('No payload supplied.', 403);
@@ -43,7 +43,7 @@ class SesWebhookController
          /** @var \TsfCorp\Email\WebhookEmailModelResolverInterface $resolver */
         $resolver = config('email.webhook_email_model_resolver', DefaultWebhookEmailModelResolver::class);
 
-        $webhook = SesWebhookFactory::make(json_decode($payload['Message'], true));
+        $webhook = SesWebhookFactory::make(json_decode((string)$payload['Message'], true));
 
         $email = $resolver::resolve($webhook);
 

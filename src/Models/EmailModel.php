@@ -88,7 +88,7 @@ class EmailModel extends Model
             return [];
         }
 
-        return json_decode($this->attachments, true);
+        return json_decode((string)$this->attachments, true);
     }
 
     /**
@@ -100,7 +100,7 @@ class EmailModel extends Model
             return [];
         }
 
-        return json_decode($this->metadata, true);
+        return json_decode((string)$this->metadata, true);
     }
 
     /**
