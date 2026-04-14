@@ -11,17 +11,17 @@ use TsfCorp\Email\Models\EmailRecipient;
 
 class Email
 {
-    private string $provider;
-    private array $from = [];
-    private array $recipients = [];
-    private array $reply_to = [];
-    private string $subject = '';
-    private mixed $body = null;
-    private array $attachments = [];
-    private array $metadata = [];
-    private array $available_providers = ['mailgun', 'ses', 'google-smtp'];
-    private ?EmailModel $model = null;
-    private ?string $database_connection = null;
+    protected string $provider;
+    protected array $from = [];
+    protected array $recipients = [];
+    protected array $reply_to = [];
+    protected string $subject = '';
+    protected mixed $body = null;
+    protected array $attachments = [];
+    protected array $metadata = [];
+    protected array $available_providers = ['mailgun', 'ses', 'google-smtp'];
+    protected ?EmailModel $model = null;
+    protected ?string $database_connection = null;
 
     public function __construct()
     {
