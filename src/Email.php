@@ -216,6 +216,11 @@ class Email
         return $this->enqueue()->dispatch($delay);
     }
 
+    public function __toString(): string
+    {
+        return (string)$this->body;
+    }
+
     private function isValidEmailAddress(?string $email_address): bool
     {
         return !empty($email_address) && filter_var($email_address, FILTER_VALIDATE_EMAIL);

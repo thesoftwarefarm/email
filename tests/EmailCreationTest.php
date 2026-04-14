@@ -3,6 +3,7 @@
 namespace TsfCorp\Email\Tests;
 
 use Illuminate\Support\Facades\Bus;
+use Illuminate\View\View;
 use TsfCorp\Email\Attachment;
 use TsfCorp\Email\Email;
 use TsfCorp\Email\Jobs\EmailJob;
@@ -43,6 +44,22 @@ class EmailCreationTest extends TestCase
 
         $this->assertEquals(config('email.from.address'), $from->email);
         $this->assertEquals(config('email.from.name'), $from->name);
+    }
+
+    public function test_cast_to_string()
+    {
+        $no_body_email = new Email();
+
+        $plain_text_email = (new Email())
+            ->body('body');
+
+
+        $blade_email = (new Email())
+            ->body(view()->file(__DIR__.'/../stubs/body.blade.php', ['name' => 'John Doe']));
+
+        $this->assertEquals('', (string) $no_body_email);
+        $this->assertEquals('body', (string) $plain_text_email);
+        $this->assertEquals('<h1>John Doe</h1>'.PHP_EOL, (string) $blade_email);
     }
 
     public function test_email_is_saved_in_database()
